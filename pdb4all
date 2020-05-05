@@ -968,12 +968,9 @@ if __name__ == '__main__':
     if outformat == 'fasta':
         my_pdb.write_fasta(outfile, gaps=False)
     else:
-        # standard processing
-        if args.center: my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)
-        
-        # outformat selection
         if outformat == 'gmx':
             standard_preparation(my_pdb, outformat, args.ff)
+            if args.center: my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)
             my_pdb.write(outfile, title=True, remark4=True, renum_atoms=True)
         
         elif outformat == 'dynamo':
@@ -981,6 +978,7 @@ if __name__ == '__main__':
             my_pdb.remove('name', 'OC2')
             my_pdb.substitute('name', 'OC1', 'O')
             standard_preparation(my_pdb, outformat, args.ff)
+            if args.center: my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)
             if args.dynamize:
                 my_pdb.write_crd(baseout + '.crd')
                 my_pdb.write_seq(baseout + '.seq', variants=True, ssbonds=True)
