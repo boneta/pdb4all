@@ -6,7 +6,7 @@
 ##                              pdb4all                              ##
 ##                                                                   ##
 #######################################################################
-# 
+#
 #
 # Copyright (C) 2020, Sergio Boneta
 #
@@ -63,7 +63,7 @@ def __parserbuilder():
     parser.add_argument('-v',
                         '--version',
                         action='version',
-                        version='pdb4all   0.1 - 04052020\nby Sergio Boneta / GPL')
+                        version='pdb4all   0.1.1 - 19052020\nby Sergio Boneta / GPL')
     parser.add_argument('I',
                         metavar='.pdb',
                         type=str,
@@ -101,6 +101,10 @@ def __parserbuilder():
                         action='store_false',
                         help='read simplified pdb based on common columns\n'+
                         '  ATOM/HETATM  #Atom  Atom  Res  [Chain]  #Res  X  Y  Z  Occup  TempFac  [Segment]')
+    parser.add_argument('--gro2one',
+                        metavar='.gro',
+                        nargs=2,
+                        help='take two .gro and append second to first')
 
 
 #######################################################################
@@ -248,7 +252,7 @@ rosetta_residues = { 'amber'  : [ 'HIS', 'HID', 'HIE', 'HIP', 'CYS', 'CYM', 'CYX
                      'charmm' : [ 'HIS', 'HSD', 'HSE', 'HSP', 'CYS', 'CYS', 'CYS', 'LYS', 'LSN', 'ASP', 'ASP', 'GLU', 'GLU' ],
                      'opls'   : [ 'HIS', 'HIS', 'HIS', 'HIS', 'CYS', 'CYS', 'CYS', 'LYS', 'LYS', 'ASP', 'ASP', 'GLU', 'GLU' ]  }
 
-rosetta_atoms = { 
+rosetta_atoms = {
                   'dynamo' : { 'ALA' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'HB3', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'ARG' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'HG1', 'HG2', 'CD', 'HD1', 'HD2', 'NE', 'HE', 'CZ', 'NH1', 'HH11', 'HH12', 'NH2', 'HH21', 'HH22', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'ASN' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'OD1', 'ND2', 'HD21', 'HD22', 'C', 'O', 'OC1', 'OC2', 'OXT'],
@@ -269,7 +273,7 @@ rosetta_atoms = {
                                'TRP' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'CD1', 'HD1', 'NE1', 'HE1', 'CE2', 'CZ2', 'HZ2', 'CH2', 'HH2', 'CZ3', 'HZ3', 'CE3', 'HE3', 'CD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'TYR' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'CD1', 'HD1', 'CE1', 'HE1', 'CZ', 'OH', 'HH', 'CE2', 'HE2', 'CD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'VAL' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB', 'CG1', 'HG11', 'HG12', 'HG13', 'CG2', 'HG21', 'HG22', 'HG23', 'C', 'O', 'OC1', 'OC2', 'OXT'],
-                               
+
                                'HID' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'ND1', 'HD1', 'CE1', 'HE1', 'NE2', 'CD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'HIE' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'ND1', 'CE1', 'HE1', 'NE2', 'HE2', 'CD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'HIP' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'ND1', 'HD1', 'CE1', 'HE1', 'NE2', 'HE2', 'CD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
@@ -298,7 +302,7 @@ rosetta_atoms = {
                                'TRP' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'CD1', 'HD1', 'NE1', 'HE1', 'CE2', 'CZ2', 'HZ2', 'CH2', 'HH2', 'CZ3', 'HZ3', 'CE3', 'HE3', 'CD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'TYR' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'CD1', 'HD1', 'CE1', 'HE1', 'CZ', 'OH', 'HH', 'CE2', 'HE2', 'CD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'VAL' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB', 'CG1', '1HG1', '2HG1', '3HG1', 'CG2', '1HG2', '2HG2', '3HG2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
-                               
+
                                'HID' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'ND1', 'HD1', 'CE1', 'HE1', 'NE2', 'CD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'HIE' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'ND1', 'CE1', 'HE1', 'NE2', 'HE2', 'CD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'HIP' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'ND1', 'HD1', 'CE1', 'HE1', 'NE2', 'HE2', 'CD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
@@ -372,7 +376,7 @@ segment_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', '
 ##  Main PDB class  ###################################################
 class pdb:
     '''Main PDB class'''
-    
+
     def __init__( self ):
         self.pdb = []
         self.title = ''
@@ -589,9 +593,9 @@ class pdb:
                 for n in lig_index:
                     if self.pdb[n]['element'] != '':
                         outp.write("{:<4s}  {:<2s}    0.0\n".format(self.pdb[n]['name'], self.pdb[n]['element']))
-                    else: 
+                    else:
                         outp.write("{:<4s}  {:<2s}    0.0\n".format(self.pdb[n]['name'], list(self.pdb[n]['name'])[0]))
-                
+
     ## substitute field -----------------------------------------------
     def substitute( self, field, origin, destination, protectProtein=False, onlyProtein=False ):
         '''Change field values that match'''
@@ -701,11 +705,11 @@ class pdb:
                         if rosetta_atoms[canon][resName].index(self.pdb[i]['name']) > rosetta_atoms[canon][resName].index(self.pdb[i+1]['name']):
                             self.pdb[i], self.pdb[i+1] = self.pdb[i+1], self.pdb[i]
                             swapped = True
-                    except ValueError: 
+                    except ValueError:
                         self.pdb[i], self.pdb[i+1] = self.pdb[i+1], self.pdb[i]
                         swapped = True
                 if not swapped: break
-            linen = linen_end +1 
+            linen = linen_end +1
             res += 1
 
     ## renumerate atoms -----------------------------------------------
@@ -719,7 +723,7 @@ class pdb:
         '''Renumerate residues, each group from 1: Protein / Ligands / Solvent / Ions'''
         if protectProtein:
             resSeq = self.pdb[0]['resSeq'] - 1
-        else: 
+        else:
             resSeq = 0
         group_last = ''
         resName_prev = ''
@@ -747,7 +751,7 @@ class pdb:
             resName_prev = resName
             if resName not in aa or not protectProtein:
                 n['resSeq'] = resSeq
-    
+
     ## guess elements -------------------------------------------------
     def guess_elements( self, keepknown=True ):
         '''Guess elements for all atoms'''
@@ -863,7 +867,7 @@ class pdb:
         seg = {}
         for n in range(self.natoms):
             if self.pdb[n]['segment'] == '': raise ValueError("Not all segments assigned")
-            if self.pdb[n]['segment'] not in seg: 
+            if self.pdb[n]['segment'] not in seg:
                 seg.update({ self.pdb[n]['segment'] : 1 })
             elif self.pdb[n]['resSeq'] != self.pdb[n-1]['resSeq'] or self.pdb[n]['resName'] != self.pdb[n-1]['resName']:
                 seg[self.pdb[n]['segment']] += 1
@@ -899,7 +903,7 @@ class pdb:
     @property
     def ssbonds( self ):
         '''S-S bonds list: [[ #resSeq, #resSeq ]]'''
-        ss_bond_thr = 4.0  # maximum distance to consider S-S bond (A)
+        ss_bond_thr = 6.0  # maximum distance to consider S-S bond (A)
         # get lines from SG atoms from CYX
         sg = [ line for n, line in enumerate(self.pdb) if line['name']=='SG' and line['resName']=='CYX' ]
         # calculate upper distance matrix, consider bond if below threshold
@@ -930,20 +934,46 @@ def standard_preparation( molec, outformat, ff='amber' ):
     molec.translate_residues(ff,origin=None)
     molec.translate_names(outformat, origin=None)
     molec.canonical_order(outformat)
-    molec.renum_res(continuous=False,protectProtein=False,guess_segments=True)
     molec.guess_elements(keepknown=False)
     molec.cys2cyx()
+
+
+##  gro2one  #####################################
+def gro2one( molec1, molec2 ):
+    '''Append second .gro file to first'''
+    # read molecule 2
+    with open(molec2, 'r') as mol2:
+        m2 = mol2.readlines()
+    # read and write molecule 1
+    with open(molec1, 'r+') as mol1:
+        m1 = mol1.readlines()
+        mol1.seek(0)  # go to beginning
+        # update number of atoms
+        m1[1] = str( int(m1[1]) + int(m2[1]) ) + '\n'
+        # delete title, number of atoms and space of molecule 1
+        del m2[0:2]; del m2[-1]
+        m1 = m1[:-1] + m2 + [m1[-1]]
+        for line in m1:
+            mol1.write(str(line))
+        mol1.truncate()
+
 
 
 #######################################################################
 ##  MAIN                                                             ##
 #######################################################################
 if __name__ == '__main__':
-    
+
+    # check especial options
+    if sys.argv[1] == '--gro2one':
+        gro2one(sys.argv[2], sys.argv[3])
+        sys.stderr.write("{0}, {1} --> {0}\n".format(sys.argv[2], sys.argv[3]))
+        sys.exit()
+
     # parser
     __parserbuilder()
     args = parser.parse_args()
-    
+
     # names of files
     infile    = args.I
     basein    = os.path.splitext(infile)[0]
@@ -963,7 +993,7 @@ if __name__ == '__main__':
     # read pdb
     my_pdb = pdb()
     my_pdb.read(infile, strict=args.simple)
-    
+
     # main selection
     if outformat == 'fasta':
         my_pdb.write_fasta(outfile, gaps=False)
@@ -972,12 +1002,13 @@ if __name__ == '__main__':
             standard_preparation(my_pdb, outformat, args.ff)
             if args.center: my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)
             my_pdb.write(outfile, title=True, remark4=True, renum_atoms=True)
-        
+
         elif outformat == 'dynamo':
             my_pdb.substitute('resName', 'HIS', 'HIP')
             my_pdb.remove('name', 'OC2')
             my_pdb.substitute('name', 'OC1', 'O')
             standard_preparation(my_pdb, outformat, args.ff)
+            my_pdb.renum_res(continuous=False, protectProtein=False, guess_segments=True)
             if args.center: my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)
             if args.dynamize:
                 my_pdb.write_crd(baseout + '.crd')
