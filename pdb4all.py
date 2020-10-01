@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 #######################################################################
@@ -29,7 +29,7 @@
 
 
 #######################################################################
-##  Dependences                                                      ##
+##  DEPENDENCIES                                                     ##
 #######################################################################
 ## Support: Python >2.7 and >3.7
 
@@ -40,52 +40,58 @@ import argparse
 
 
 #######################################################################
-##  Parser                                                           ##
+##  PARSER                                                           ##
 #######################################################################
 ## OpenBabel inspired
 
 def __parserbuilder():
     # supported formats
-    input_formats = ['amber', 'charmm', 'opls']
-    output_formats = ['fasta', 'gmx', 'dynamo']
-    ff_formats = ['amber', 'charrm', 'opls']
+    input_formats = ['maestro', 'gmx', 'dynamo']
+    output_formats = ['fasta', 'gmx', 'dynamo', 'intseq']
+    ff_formats = ['amber', 'charmm', 'opls']
 
     input_formats_print = "\n ".join(input_formats)
     output_formats_print = "\n ".join(output_formats)
+    ff_formats_print = "\n ".join(ff_formats)
 
     # parser building
-    global parser
     parser = argparse.ArgumentParser(prog='pdb4all',
-                                    description=' -- Convert between common pdb formats and names --\n\n' +
-                                    #  'Supported input formats:\n '+input_formats_print + "\n" +
-                                    'Supported output formats:\n '+output_formats_print,
+                                    description=' -- Convert between common pdb formats and names --\n\n'+
+                                    'input formats:\n '+input_formats_print + "\n\n" +
+                                    'output formats:\n '+output_formats_print + "\n\n" +
+                                    'FF formats:\n '+ff_formats_print + "\n",
                                     formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-v',
                         '--version',
                         action='version',
-                        version='pdb4all   0.1.1 - 19052020\nby Sergio Boneta / GPL')
+                        version='pdb4all   0.3.0 - 01102020\nby Sergio Boneta / GPL')
     parser.add_argument('I',
                         metavar='.pdb',
                         type=str,
                         help='input pdb file')
     parser.add_argument('-i',
-                        required=False,
+                        required=True,
                         metavar='<format>',
                         type=str,
                         choices=input_formats,
-                        help=argparse.SUPPRESS)
-                        # help='input pdb format')
+                        help='input pdb format (software)')
     parser.add_argument('-o',
                         required=True,
                         metavar='<format>',
                         type=str,
                         choices=output_formats,
-                        help='output pdb format')
+                        help='output pdb format (software)')
     parser.add_argument('-O',
                         metavar='.pdb',
                         type=str,
                         help='output pdb file')
-    parser.add_argument('--ff',
+    parser.add_argument('-iff',
+                        metavar='ff',
+                        type=str,
+                        choices=ff_formats,
+                        default='amber',
+                        help='input Force Field format (def: amber)')
+    parser.add_argument('-off',
                         metavar='ff',
                         type=str,
                         choices=ff_formats,
@@ -106,9 +112,11 @@ def __parserbuilder():
                         nargs=2,
                         help='take two .gro and append second to first')
 
+    return parser
+
 
 #######################################################################
-##  Initialization                                                   ##
+##  INITIALIZATION                                                   ##
 #######################################################################
 
 ## Periodic Table ·····················································
@@ -256,10 +264,10 @@ rosetta_atoms = {
                   'dynamo' : { 'ALA' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'HB3', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'ARG' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'HG1', 'HG2', 'CD', 'HD1', 'HD2', 'NE', 'HE', 'CZ', 'NH1', 'HH11', 'HH12', 'NH2', 'HH21', 'HH22', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'ASN' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'OD1', 'ND2', 'HD21', 'HD22', 'C', 'O', 'OC1', 'OC2', 'OXT'],
-                               'ASP' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'OD1', 'OD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
+                               'ASP' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'OD1', 'OD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'CYS' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'SG', 'HG', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'GLN' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'HG1', 'HG2', 'CD', 'OE1', 'NE2', 'HE21', 'HE22', 'C', 'O', 'OC1', 'OC2', 'OXT'],
-                               'GLU' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'HG1', 'HG2', 'CD', 'OE1', 'OE2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
+                               'GLU' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'HG1', 'HG2', 'CD', 'OE1', 'OE2', 'HE2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'GLY' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA1', 'HA2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'HIS' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'ND1', 'HD1', 'CE1', 'HE1', 'NE2', 'HE2', 'CD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'ILE' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB', 'CG2', 'HG21', 'HG22', 'HG23', 'CG1', 'HG11', 'HG12', 'CD', 'HD1', 'HD2', 'HD3', 'C', 'O', 'OC1', 'OC2', 'OXT'],
@@ -285,10 +293,10 @@ rosetta_atoms = {
                   'gmx'    : { 'ALA' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'HB3', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'ARG' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'HG1', 'HG2', 'CD', 'HD1', 'HD2', 'NE', 'HE', 'CZ', 'NH1', '1HH1', '2HH1', 'NH2', '1HH2', '2HH2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'ASN' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'OD1', 'ND2', '1HD2', '2HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
-                               'ASP' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'OD1', 'OD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
+                               'ASP' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'OD1', 'OD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'CYS' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'SG', 'HG', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'GLN' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'HG1', 'HG2', 'CD', 'OE1', 'NE2', '1HE2', '2HE2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
-                               'GLU' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'HG1', 'HG2', 'CD', 'OE1', 'OE2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
+                               'GLU' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'HG1', 'HG2', 'CD', 'OE1', 'OE2', 'HE2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'GLY' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA1', 'HA2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'HIS' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'ND1', 'HD1', 'CE1', 'HE1', 'NE2', 'HE2', 'CD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'ILE' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB', 'CG2', '1HG2', '2HG2', '3HG2', 'CG1', '1HG1', '2HG1', 'CD', 'HD1', 'HD2', 'HD3', 'C', 'O', 'OC1', 'OC2', 'OXT'],
@@ -314,10 +322,10 @@ rosetta_atoms = {
                   'maestro': { 'ALA' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'HB3', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'ARG' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB2', 'HB3', 'CG', 'HG2', 'HG3', 'CD', 'HD2', 'HD3', 'NE', 'HE', 'CZ', 'NH1', 'HH11', 'HH12', 'NH2', 'HH21', 'HH22', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'ASN' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB2', 'HB3', 'CG', 'OD1', 'ND2', 'HD21', 'HD22', 'C', 'O', 'OC1', 'OC2', 'OXT'],
-                               'ASP' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB2', 'HB3', 'CG', 'OD1', 'OD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
+                               'ASP' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB2', 'HB3', 'CG', 'OD1', 'OD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'CYS' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB2', 'HB3', 'SG', 'HG', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'GLN' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB2', 'HB3', 'CG', 'HG2', 'HG3', 'CD', 'OE1', 'NE2', 'HE21', 'HE22', 'C', 'O', 'OC1', 'OC2', 'OXT'],
-                               'GLU' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB2', 'HB3', 'CG', 'HG2', 'HG3', 'CD', 'OE1', 'OE2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
+                               'GLU' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB2', 'HB3', 'CG', 'HG2', 'HG3', 'CD', 'OE1', 'OE2', 'HE2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'GLY' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA2', 'HA3', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'HIS' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB2', 'HB3', 'CG', 'ND1', 'HD1', 'CE1', 'HE1', 'NE2', 'HE2', 'CD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
                                'ILE' : ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB', 'CG2', 'HG21', 'HG22', 'HG23', 'CG1', 'HG12', 'HG13', 'CD1', 'HD11', 'HD12', 'HD13', 'C', 'O', 'OC1', 'OC2', 'OXT'],
@@ -363,7 +371,7 @@ segment_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', '
 
 
 #######################################################################
-##  Definitions                                                      ##
+##  DEFINITIONS                                                      ##
 #######################################################################
 
 # PDB Strict formatting
@@ -452,7 +460,7 @@ class pdb:
             self.pdb.append(newline)
 
     ## write pdb to file ----------------------------------------------
-    def write( self, file, title=False, remark4=False, renum_atoms=True ):
+    def write( self, file, title=False, remark4=False, renum_atoms=True, onlyProtein=False, notProtein=False ):
         '''Write PDB file'''
         # renumerate atoms
         if renum_atoms: self.renum_atoms()
@@ -462,11 +470,18 @@ class pdb:
             if title: outp.write("TITLE     {:70s}\n".format(self.title))
             for n in range(self.natoms):
                 line = self.pdb[n].copy()
+                # discart if not aminoacid and onlyProtein
+                if onlyProtein and line['resName'] not in aa: continue
+                # discart if aminoacid and notProtein
+                if notProtein and line['resName'] in aa: continue
                 # correct alignment of atom name
                 if len(line['name']) == 3: line['name'] = ' ' + line['name']
                 # format pdb
-                formatted_line = "{:<6s}{:>5d} {:^4s}{:1s}{:>3s} {:1s}{:>4d}{:1s}   {:>8.3f}{:>8.3f}{:>8.3f}{:>6.2f}{:>6.2f}      {:<4s}{:>2s}{:<2s}" \
-                .format( line['ATOM'], line['serial'], line['name'], line['altLoc'], line['resName'], line['chainID'], line['resSeq'], line['iCode'], \
+                # formatted_line = "{:<6s}{:>5d} {:^4s}{:1s}{:>3s} {:1s}{:>4d}{:1s}   {:>8.3f}{:>8.3f}{:>8.3f}{:>6.2f}{:>6.2f}      {:<4s}{:>2s}{:<2s}" \
+                # .format( line['ATOM'], line['serial'], line['name'], line['altLoc'], line['resName'], line['chainID'], line['resSeq'], line['iCode'], \
+                # line['x'], line['y'], line['z'], line['occupancy'], line['tempFactor'], line['segment'], line['element'], line['charge'] )
+                formatted_line = "{:<6s}{:>5d} {:^4s}{:1s}{:>3s} {:1s}{:>4.4}{:1s}   {:>8.3f}{:>8.3f}{:>8.3f}{:>6.2f}{:>6.2f}      {:<4s}{:>2s}{:<2s}" \
+                .format( line['ATOM'], line['serial'], line['name'], line['altLoc'], line['resName'], line['chainID'], str(line['resSeq']), line['iCode'], \
                 line['x'], line['y'], line['z'], line['occupancy'], line['tempFactor'], line['segment'], line['element'], line['charge'] )
                 # write
                 outp.write( formatted_line + "\n" )
@@ -495,6 +510,17 @@ class pdb:
                 formatted_line = "{:<s}".format(''.join(seq[0+n*70:70+n*70]))
                 outp.write( formatted_line + "\n" )
 
+    ## write interaction sequence to file -----------------------------
+    def write_intseq( self, file ):
+        '''Write interaction sequence to file'''
+        seq = self.sequence
+        # open file
+        with open( file, 'wt' ) as outp:
+            # sequence format: X#
+            for res in seq:
+                formatted_line = "{:<s}{:<d}".format(res[2],res[0])
+                outp.write( formatted_line + "\n" )
+
     ## write dynamo crd to file ---------------------------------------
     def write_crd( self, file ):
         '''Write dynamo crd file'''
@@ -502,9 +528,9 @@ class pdb:
         with open(file, 'wt') as outp:
             # crd total properties
             outp.write("!===============================================================================\n")
-            outp.write("{:<d}  {:<d}  {:<d}\n".format(self.natoms, self.nres_tot, self.nseg))
+            outp.write("{:<d} {:<d}  {:<d}\n".format(self.natoms, self.nres_tot, self.nseg))
             outp.write("!===============================================================================\n")
-            outp.write("!Symmetry \t1\n!CUBIC \t\tLattice_(Angstroms)\n")
+            outp.write("!Symmetry\t1\n!CUBIC \t\tLattice_(Angstroms)\n")
             outp.write("!===============================================================================\n")
             # initializations
             natoms = self.natoms
@@ -518,20 +544,21 @@ class pdb:
                 if self.pdb[n]['segment'] != subsys:
                     subsys = self.pdb[n]['segment']
                     nsubsys += 1
-                    outp.write("Subsystem  {:>5d}  {:s}\n".format(nsubsys, subsys))
+                    outp.write("Subsystem {:>5d}  {:s}\n".format(nsubsys, subsys))
                     outp.write("{:>7d}\n".format(segments[subsys]))
                 # residue statement
                 resName = self.pdb[n]['resName']
                 resSeq = self.pdb[n]['resSeq']
-                outp.write("Residue {:>5d} {:s}\n".format(resSeq, resName))
+                outp.write("Residue {:>5d}  {:s}\n".format(resSeq, resName))
                 # atom statement (count number of atoms in residue and print all)
                 nres = n
                 while nres < natoms and self.pdb[nres]['resName'] == resName and self.pdb[nres]['resSeq'] == resSeq : nres += 1
                 outp.write("{:7d}\n".format(nres - n))
                 while n < nres:
                     outp.write("{:>7d} {:<4s} {:>10d} {:>18.10f}{:>18.10f}{:>18.10f}\n"
-                    .format(self.pdb[n]['serial'], self.pdb[n]['name'], Ptable[self.pdb[n]['element']]['N'],
-                            self.pdb[n]['x'], self.pdb[n]['y'], self.pdb[n]['z']))
+                        .format(self.pdb[n]['serial'], self.pdb[n]['name'],
+                        Ptable[self.pdb[n]['element']]['N'], self.pdb[n]['x'],
+                        self.pdb[n]['y'], self.pdb[n]['z']))
                     n += 1
 
     ## write dynamo seq to file ---------------------------------------
@@ -575,26 +602,62 @@ class pdb:
             outp.write("\nEnd")
 
     ## write dynamo ligand opls to file -------------------------------
-    def write_ligand( self ):
+    def write_ligand( self, ligand ):
         '''Write dynamo ligand opls file'''
-        for ligand in self.ligands:
-            file = "ligand_" + ligand
-            # open file
-            with open(file, 'wt') as outp:
-                # get ligand lines index
-                lig_index = [i for i, n in enumerate(self.pdb) if ligand in n['resName']]
-                # header
-                outp.write("!-------------------------------------------------------------------------------\n")
-                outp.write("Residue {:s}\n".format(ligand))
-                outp.write("!-------------------------------------------------------------------------------\n")
-                outp.write("! # Atoms, bonds and impropers.\n")
-                outp.write(" {}   0   0\n""".format(len(lig_index)))
-                # atoms
-                for n in lig_index:
-                    if self.pdb[n]['element'] != '':
-                        outp.write("{:<4s}  {:<2s}    0.0\n".format(self.pdb[n]['name'], self.pdb[n]['element']))
-                    else:
-                        outp.write("{:<4s}  {:<2s}    0.0\n".format(self.pdb[n]['name'], list(self.pdb[n]['name'])[0]))
+        file="ligand_"+ligand
+        # get ligand lines index
+        lig_index = [i for i, n in enumerate(self.pdb) if n['resName']==ligand]
+        # bonds: calculate upper distance matrix, consider bond if below threshold
+        bond_thr = 1.7  # bond threshold
+        bonds = []
+        for i in lig_index:
+            for j in range(i+1, lig_index[-1]+1):
+                dist = m.sqrt( (self.pdb[i]['x']-self.pdb[j]['x'])**2 + (self.pdb[i]['y']-self.pdb[j]['y'])**2 + (self.pdb[i]['z']-self.pdb[j]['z'])**2 )
+                if dist < bond_thr and (self.pdb[i]['element'] or self.pdb[j]['element']) != 'H':
+                    bonds.append([self.pdb[i]['name'],self.pdb[j]['name']])
+        # improper dihedrals (central in third position, rest alphabetical)
+        impropers = []
+        for i in lig_index:
+            name = self.pdb[i]['name']
+            # atoms bonded to atom_i and alphabetically sorted
+            bonds_i = list({k for j in bonds for k in j if name in j and name != k})
+            # if it has 3 bonds, assumed to be sp2
+            if len(bonds_i) == 3:
+                bonds_sorted = sorted(bonds_i)
+                bonds_sorted.insert(2,name)
+                impropers.append(bonds_sorted)
+        # open file
+        with open(file, 'wt') as outp:
+            # header
+            outp.write("!-------------------------------------------------------------------------------\n")
+            outp.write("Residue {:s}\n".format(ligand))
+            outp.write("!-------------------------------------------------------------------------------\n")
+            outp.write("! # Atoms, bonds and impropers.\n")
+            outp.write(" {}   {}   {}\n""".format(len(lig_index),len(bonds),len(impropers)))
+            # atoms
+            for n in lig_index:
+                if self.pdb[n]['element'] != '':
+                    outp.write("{:<4s}  {:<2s}    0.0\n".format(self.pdb[n]['name'], self.pdb[n]['element']))
+                else:
+                    outp.write("{:<4s}  {:<2s}    0.0\n".format(self.pdb[n]['name'], list(self.pdb[n]['name'])[0]))
+            # bonds
+            outp.write("\n")
+            nline = 0
+            for b in bonds:
+                nline += 1
+                outp.write("{:<4s} {:<4s} ; ".format(b[0],b[1]))
+                if nline % 6 == 0:
+                    nline = 0
+                    outp.write("\n")
+            # impropers
+            outp.write("\n\n")
+            nline = 0
+            for b in impropers:
+                nline += 1
+                outp.write("{:<4s} {:<4s} {:<4s} {:<4s} ; ".format(b[0],b[1],b[2],b[3]))
+                if nline % 3 == 0:
+                    nline = 0
+                    outp.write("\n")
 
     ## substitute field -----------------------------------------------
     def substitute( self, field, origin, destination, protectProtein=False, onlyProtein=False ):
@@ -652,33 +715,24 @@ class pdb:
     def translate_residues( self, destination, origin=None ):
         '''Translate resNames between ff'''
         if origin is None:
-            for j in rosetta_residues.keys():
-                if j == destination: continue
-                for n in self.pdb:
-                    if n['resName'] in rosetta_residues[j]:
-                        n['resName'] = rosetta_residues[destination][rosetta_residues[j].index(n['resName'])]
-                        continue
+            formats = rosetta_residues.keys()
         else:
+            formats = [origin]
+        for j in formats:
+            if j == destination: continue
             for n in self.pdb:
-                if n['resName'] in rosetta_residues[origin]:
-                    n['resName'] = rosetta_residues[destination][rosetta_residues[origin].index(n['resName'])]
-                    continue
+                resName = n['resName']
+                if resName in rosetta_residues[j]:
+                    n['resName'] = rosetta_residues[destination][rosetta_residues[j].index(resName)]
 
     ## transate names between formats ---------------------------------
-    def translate_names( self, destination, origin=None ):
+    def translate_names( self, destination, origin ):
         '''Translate atom names between formats'''
-        if origin is None:
-            for j in rosetta_atoms.keys():
-                if j == destination: continue
-                for n in self.pdb:
-                    if n['resName'] in rosetta_atoms[j] and n['name'] in rosetta_atoms[j][n['resName']]:
-                        n['name'] = rosetta_atoms[destination][n['resName']][rosetta_atoms[j][n['resName']].index(n['name'])]
-                        continue
-        else:
-            for n in self.pdb:
-                if n['resName'] in rosetta_atoms[origin] and n['name'] in rosetta_atoms[origin][n['resName']]:
-                    n['name'] = rosetta_atoms[destination][n['resName']][rosetta_atoms[origin][n['resName']].index(n['name'])]
-                    continue
+        for n in self.pdb:
+            resName = n['resName']
+            name = n['name']
+            if resName in rosetta_atoms[origin] and name in rosetta_atoms[origin][resName]:
+                n['name'] = rosetta_atoms[destination][resName][rosetta_atoms[origin][resName].index(name)]
 
     ## reorder protein atoms ------------------------------------------
     def canonical_order( self, canon='dynamo' ):
@@ -721,35 +775,28 @@ class pdb:
     ## renumerate residues --------------------------------------------
     def renum_res( self, continuous=False, protectProtein=False, guess_segments=False ):
         '''Renumerate residues, each group from 1: Protein / Ligands / Solvent / Ions'''
-        if protectProtein:
-            resSeq = self.pdb[0]['resSeq'] - 1
-        else:
-            resSeq = 0
-        group_last = ''
+        if guess_segments: self.guess_segments()
+        resSeq = 0
+        resSeq_prev = 0
         resName_prev = ''
-        ligands = self.ligands
-        for n in self.pdb:
-            resName = n['resName']
-            if not continuous:  # Detect group
-                if resName in aa:
-                    group = 'protein'
-                    if guess_segments: n['segment'] = segment_letters[0]
-                elif resName in solvent:
-                    group = 'solvent'
-                    if guess_segments: n['segment'] = solvent[resName]
-                elif resName in ions:
-                    group = 'ions'
-                    if guess_segments: n['segment'] = ions[resName]
-                elif resName in ligands:
-                    group = resName
-                    if guess_segments: n['segment'] = segment_letters[ligands.index(resName) + 1]
-                if group != group_last:
-                    group_last = group
+        segment_prev = ''
+        if continuous:  # all residues in global list, ignore protectProtein
+            for n in self.pdb:
+                if n['resName'] != resName_prev or n['resSeq'] != resSeq_prev:
+                    resName_prev = n['resName']
+                    resSeq_prev = n['resSeq']
+                    resSeq += 1
+                n['resSeq'] = resSeq
+        else:  # renumerate with a new list for each segment
+            for n in self.pdb:
+                if protectProtein and n['resName'] in aa: continue
+                if n['segment'] != segment_prev:
+                    segment_prev = n['segment']
                     resSeq = 0
-            if resName != resName_prev or n['resSeq'] != resSeq_prev: resSeq += 1
-            resSeq_prev = n['resSeq']
-            resName_prev = resName
-            if resName not in aa or not protectProtein:
+                if n['resName'] != resName_prev or n['resSeq'] != resSeq_prev:
+                    resName_prev = n['resName']
+                    resSeq_prev = n['resSeq']
+                    resSeq += 1
                 n['resSeq'] = resSeq
 
     ## guess elements -------------------------------------------------
@@ -757,19 +804,16 @@ class pdb:
         '''Guess elements for all atoms'''
         for n in self.pdb:
             if keepknown and n['element'] != '': continue
+            name = ''.join([i for i in n['name'] if i.isalpha()])
             if n['resName'] in aa:  # protein
-                if n['name'][0] in Ptable:
-                    n['element'] = n['name'][0]
-                elif n['name'][1] in Ptable:
-                    n['element'] = n['name'][1]
+                if name[0] in Ptable:
+                    n['element'] = name[0]
+                elif name[1] in Ptable:
+                    n['element'] = name[1]
+            elif n['resName'] in ions:  # ions
+                n['element'] = name[0] + name[1].lower()
             else:  # rest
-                if n['name'] in Ptable or n['name'] in Ptable_upper:
-                    if len(n['name']) == 1:
-                        n['element'] = n['name'][0]
-                    elif len(n['name']) == 2:
-                        n['element'] = n['name'][0] + n['name'][1].lower()
-                elif n['name'][0] in Ptable:
-                    n['element'] = n['name'][0]
+                n['element'] = name[0]
 
     ## guess segments -------------------------------------------------
     def guess_segments( self, keepknown=True, useChains=False ):
@@ -824,13 +868,108 @@ class pdb:
     ## change names CYS for CYX ---------------------------------------
     def cys2cyx( self ):
         '''Change resName of CYS for CYX if not HG'''
-        # get resSeq from SG and HG atoms
+        # get resSeq for SG and HG atoms
         sg = { line['resSeq'] for n, line in enumerate(self.pdb) if line['name']=='SG' and line['resName'] in aa }
         hg = { line['resSeq'] for n, line in enumerate(self.pdb) if line['name']=='HG' and line['resName'] in aa }
         # change names
         for n in self.pdb:
             if n['resName'] == 'CYS' and n['resSeq'] in sg.difference(hg): n['resName'] = 'CYX'
             elif n['resName'] == 'CYX' and n['resSeq'] in sg.intersection(hg): n['resName'] = 'CYS'
+
+    ## change HIS for HID/HIE/HIP -------------------------------------
+    def guess_his( self ):
+        '''Change HIS for corresponding HID/HIE/HIP'''
+        # get resSeq for N HIS
+        nhis = [ n for n, line in enumerate(self.pdb) if line['name']=='N' and line['resName']=='HIS' ]
+        for linen in nhis:
+            # residue number and name
+            resSeq = self.pdb[linen]['resSeq']
+            resName = self.pdb[linen]['resName']
+            # find last residue line
+            linen_end = linen
+            while linen_end < self.natoms:
+                if self.pdb[linen_end]['resSeq'] == resSeq and self.pdb[linen_end]['resName'] == resName: linen_end += 1
+                else: break
+            # determine HID/HIE/HIP
+            keyres = [ line['name'] for line in self.pdb[linen:linen_end] if line['name']=='HD1' or line['name']=='HE2' ]
+            if len(keyres)==2:
+                histype = 'HIP'
+            elif len(keyres)==1:
+                if keyres[0]=='HD1': histype = 'HID'
+                elif keyres[0]=='HE2': histype = 'HIE'
+            else:
+                raise ValueError('Strange HIS found')
+            # change resName
+            for n in range(linen,linen_end):
+                self.pdb[n]['resName'] = histype
+
+    ## change GLU for GLH ---------------------------------------------
+    def guess_glh( self ):
+        '''Change GLU for corresponding GLH'''
+        # get resSeq for N HIS
+        nglu = [ n for n, line in enumerate(self.pdb) if line['name']=='N' and line['resName']=='GLU' ]
+        for linen in nglu:
+            # residue number and name
+            resSeq = self.pdb[linen]['resSeq']
+            resName = self.pdb[linen]['resName']
+            # find last residue line
+            linen_end = linen
+            while linen_end < self.natoms:
+                if self.pdb[linen_end]['resSeq'] == resSeq and self.pdb[linen_end]['resName'] == resName: linen_end += 1
+                else: break
+            # determine GLH
+            if 'HE2' in { line['name'] for line in self.pdb[linen:linen_end] }:
+                # change resName
+                for n in range(linen,linen_end):
+                    self.pdb[n]['resName'] = 'GLH'
+
+    ## change ASP for ASH ---------------------------------------------
+    def guess_ash( self ):
+        '''Change ASP for corresponding ASH'''
+        # get resSeq for N HIS
+        nasp = [ n for n, line in enumerate(self.pdb) if line['name']=='N' and line['resName']=='ASP' ]
+        for linen in nasp:
+            # residue number and name
+            resSeq = self.pdb[linen]['resSeq']
+            resName = self.pdb[linen]['resName']
+            # find last residue line
+            linen_end = linen
+            while linen_end < self.natoms:
+                if self.pdb[linen_end]['resSeq'] == resSeq and self.pdb[linen_end]['resName'] == resName: linen_end += 1
+                else: break
+            # determine ASH
+            if 'HD2' in { line['name'] for line in self.pdb[linen:linen_end] }:
+                # change resName
+                for n in range(linen,linen_end):
+                    self.pdb[n]['resName'] = 'ASH'
+
+    ## change LYS for LYN ---------------------------------------------
+    def guess_lyn( self ):
+        '''Change LYS for corresponding LYN'''
+        # get resSeq for N HIS
+        nasp = [ n for n, line in enumerate(self.pdb) if line['name']=='N' and line['resName']=='LYS' ]
+        for linen in nasp:
+            # residue number and name
+            resSeq = self.pdb[linen]['resSeq']
+            resName = self.pdb[linen]['resName']
+            # find last residue line
+            linen_end = linen
+            while linen_end < self.natoms:
+                if self.pdb[linen_end]['resSeq'] == resSeq and self.pdb[linen_end]['resName'] == resName: linen_end += 1
+                else: break
+            # determine ASH
+            if 'HZ3' not in { line['name'] for line in self.pdb[linen:linen_end] }:
+                # change resName
+                for n in range(linen,linen_end):
+                    self.pdb[n]['resName'] = 'LYN'
+
+    ## guess protonation resName of key residues ----------------------
+    def guess_protonres( self ):
+        '''Change residues based on their protonation (HIS,GLU,ASP,LYS)'''
+        self.guess_his()
+        self.guess_glh()
+        self.guess_ash()
+        self.guess_lyn()
 
     ## number of atoms ------------------------------------------------
     @property
@@ -922,21 +1061,16 @@ class pdb:
         '''Molecular average protein weight (Da)'''
         return self.weight( guess_elements=True, onlyProtein=True, monoisotopic=False )
 
-    ## TO DO ----------------------------------------------------------
-    # def guess_his( self ):
-    #     '''Change HIS for corresponding HID/HIE/HIP'''
-
 
 ##  Standard protein preparation  #####################################
-def standard_preparation( molec, outformat, ff='amber' ):
+def standard_preparation( molec, inpformat, outformat, ff='amber' ):
     '''Standard protein preparation'''
     molec.all2ATOM()
-    molec.translate_residues(ff,origin=None)
-    molec.translate_names(outformat, origin=None)
+    molec.translate_residues(ff, origin=None)
+    molec.translate_names(outformat, origin=inpformat)
     molec.canonical_order(outformat)
     molec.guess_elements(keepknown=False)
     molec.cys2cyx()
-
 
 ##  gro2one  #####################################
 def gro2one( molec1, molec2 ):
@@ -965,20 +1099,22 @@ def gro2one( molec1, molec2 ):
 if __name__ == '__main__':
 
     # check especial options
-    if sys.argv[1] == '--gro2one':
+    if len(sys.argv)>1 and sys.argv[1] == '--gro2one':
         gro2one(sys.argv[2], sys.argv[3])
         sys.stderr.write("{0}, {1} --> {0}\n".format(sys.argv[2], sys.argv[3]))
         sys.exit()
 
     # parser
-    __parserbuilder()
+    parser = __parserbuilder()
     args = parser.parse_args()
 
     # names of files
     infile    = args.I
     basein    = os.path.splitext(infile)[0]
-    informat  = args.i
+    inpformat = args.i
     outformat = args.o
+    inpff     = args.iff
+    outff     = args.off
     if args.O is not None:
         outfile = args.O
         baseout = os.path.splitext(outfile)[0]
@@ -986,6 +1122,9 @@ if __name__ == '__main__':
         if outformat == 'fasta':
             baseout = basein
             outfile = baseout + ".fasta"
+        elif outformat == 'intseq':
+            baseout = basein
+            outfile = baseout + ".resid"
         else:
             baseout = basein + "_" + outformat
             outfile = baseout + ".pdb"
@@ -997,24 +1136,28 @@ if __name__ == '__main__':
     # main selection
     if outformat == 'fasta':
         my_pdb.write_fasta(outfile, gaps=False)
+    elif outformat == 'intseq':
+        my_pdb.write_intseq(outfile)
     else:
         if outformat == 'gmx':
-            standard_preparation(my_pdb, outformat, args.ff)
+            standard_preparation(my_pdb, inpformat, outformat, outff)
+            my_pdb.guess_protonres()
             if args.center: my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)
-            my_pdb.write(outfile, title=True, remark4=True, renum_atoms=True)
+            my_pdb.write(outfile, title=True, remark4=True, renum_atoms=True, onlyProtein=True)
 
         elif outformat == 'dynamo':
-            my_pdb.substitute('resName', 'HIS', 'HIP')
+            standard_preparation(my_pdb, inpformat, outformat, outff)
             my_pdb.remove('name', 'OC2')
             my_pdb.substitute('name', 'OC1', 'O')
-            standard_preparation(my_pdb, outformat, args.ff)
+            my_pdb.guess_his()
             my_pdb.renum_res(continuous=False, protectProtein=False, guess_segments=True)
+            my_pdb.renum_atoms()
             if args.center: my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)
             if args.dynamize:
                 my_pdb.write_crd(baseout + '.crd')
                 my_pdb.write_seq(baseout + '.seq', variants=True, ssbonds=True)
-                my_pdb.write_ligand()
-            for n in {'occupancy', 'tempFactor', 'element', 'charge', 'chainID'}: my_pdb.clean_field(n)
-            my_pdb.write(outfile, title=True, remark4=True, renum_atoms=True)
+                for ligand in my_pdb.ligands: my_pdb.write_ligand(ligand)
+            for n in ['occupancy', 'tempFactor', 'element', 'charge', 'chainID']: my_pdb.clean_field(n)
+            my_pdb.write(outfile, title=True, remark4=True, renum_atoms=True, onlyProtein=False)
 
     sys.stderr.write("{:s} --> {:s} \n".format(infile, outfile))
