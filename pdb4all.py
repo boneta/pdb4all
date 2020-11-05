@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# File: pdb4all.py
+# Description : Protein conversion between common pdb formats and name conventions
+# Version : 0.3.1
+# Last update : 5-11-2020
+# Author : Sergio Boneta
+
 #######################################################################
 ##                                                                   ##
 ##                              pdb4all                              ##
@@ -27,6 +33,25 @@
 # Check for updates:  https://github.com/boneta/pdb4all
 
 
+"""
+pdb4all
+=======
+
+Protein conversion between common pdb formats and name conventions
+
+
+Classes
+-------
+
+    mmConfig
+
+Functions
+---------
+
+    standard_preparation
+    gro2one
+
+"""
 
 #######################################################################
 ##  DEPENDENCIES                                                     ##
@@ -64,7 +89,7 @@ def __parserbuilder():
     parser.add_argument('-v',
                         '--version',
                         action='version',
-                        version='pdb4all   0.3.0 - 01102020\nby Sergio Boneta / GPL')
+                        version='pdb4all   0.3.1 - 05112020\nby Sergio Boneta / GPL')
     parser.add_argument('I',
                         metavar='.pdb',
                         type=str,
@@ -1070,7 +1095,6 @@ def standard_preparation( molec, inpformat, outformat, ff='amber' ):
     molec.translate_names(outformat, origin=inpformat)
     molec.canonical_order(outformat)
     molec.guess_elements(keepknown=False)
-    molec.cys2cyx()
 
 ##  gro2one  #####################################
 def gro2one( molec1, molec2 ):
@@ -1147,6 +1171,7 @@ if __name__ == '__main__':
 
         elif outformat == 'dynamo':
             standard_preparation(my_pdb, inpformat, outformat, outff)
+            my_pdb.cys2cyx()
             my_pdb.remove('name', 'OC2')
             my_pdb.substitute('name', 'OC1', 'O')
             my_pdb.guess_his()
