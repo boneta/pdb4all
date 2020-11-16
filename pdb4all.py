@@ -3,8 +3,8 @@
 
 # File: pdb4all.py
 # Description : Protein conversion between common pdb formats and name conventions
-# Version : 0.3.1
-# Last update : 5-11-2020
+# Version : 0.3.2
+# Last update : 16-11-2020
 # Author : Sergio Boneta
 
 #######################################################################
@@ -43,7 +43,7 @@ Protein conversion between common pdb formats and name conventions
 Classes
 -------
 
-    mmConfig
+    pdb
 
 Functions
 ---------
@@ -63,6 +63,7 @@ import sys
 import math as m
 import argparse
 
+__version__ = '0.3.2'
 
 #######################################################################
 ##  PARSER                                                           ##
@@ -89,7 +90,7 @@ def __parserbuilder():
     parser.add_argument('-v',
                         '--version',
                         action='version',
-                        version='pdb4all   0.3.1 - 05112020\nby Sergio Boneta / GPL')
+                        version='pdb4all  v{}\nby Sergio Boneta / GPL'.format(__version__))
     parser.add_argument('I',
                         metavar='.pdb',
                         type=str,
@@ -275,6 +276,7 @@ Ptable_upper = { i.upper():j for i,j in Ptable.items() }
 aa_letters = {'ALA':'A','ARG':'R','ASN':'N','ASP':'D','CYS':'C','GLU':'E','GLN':'Q','GLY':'G','HIS':'H','ILE':'I',
               'LEU':'L','LYS':'K','MET':'M','PHE':'F','PRO':'P','SER':'S','THR':'T','TRP':'W','TYR':'Y','VAL':'V'}
 aa_letters.update({'HID':'H', 'HIE':'H', 'HIP':'H', 'CYX':'C', 'CYM':'C', 'LYN':'K', 'ASH':'D', 'GLH':'E'})
+aa_letters.update({'HSD':'H', 'HSE':'H', 'HSP':'H'})
 aa_letters.update({'SEC':'U'})
 
 # aa set (more efficiency)
@@ -408,15 +410,99 @@ segment_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', '
 
 ##  Main PDB class  ###################################################
 class pdb:
-    '''Main PDB class'''
+    '''
+        Main PDB class
+
+        Attributes
+        ----------
+        title : str
+        pdb : list of dic
+
+        Properties
+        ----------
+        natoms : int
+            number of atoms
+        nres : int
+            number of protein residues
+        nres_tot : int
+            number of total residues
+        nseg : int
+            number of segments
+        segments : dic
+            dictionary of segmenets: {seg:#res}
+        sequence : list
+            list of protein residues: [[#,XXX,X]]
+        ligands : list
+            list of ligands
+        ssbons : list
+            list of disulphide bonds: [[#resSeq,#resSeq]]
+        protein_weight : float
+            molecular average protein weight (Da)
+
+        Methods
+        -------
+        read(file,strict)
+            read pdb from file
+        write(file,title,remark4,renum_atoms,onlyProtein,notProtein)
+            write pdb to file
+        write_fasta(file,gaps)
+            write fasta to file
+        write_intseq(file)
+            write sequence in fDynamo's interaction format to file
+        write_crd(file)
+            write fDynamo's crd to file
+        write_seq(file,variants,ssbonds)
+            write fDynamo's seq to file
+        write_ligand(ligand)
+            write fDynamo's topology of ligand to file
+        substitute(field,origin,destination,protectProtein,onlyProtein)
+            change matching values of field
+        clean_field(field,value)
+            change all values of field to zero/empty/value
+        remove(field,value)
+            remove atoms that match field
+        all2ATOM()
+            change all ATOM/HETATM to ATOM
+        translate_residues(destination,origin)
+            translate resName between standards
+        translate_names(destination,origin)
+            translate atom names between standards
+        canonical_order(canon)
+            reorder protein atoms inside residues
+        renum_atoms()
+            renumerate all atoms from 1
+        renum_res(continuous,protectProtein,guess_segments)
+            renumerate residues, each group from 1: protein/ligands/solvent/ions
+        guess_elements(keepknown)
+            guess elements of all atoms
+        guess_segments(keepknown,useChains)
+            guess segments, one for each group: protein/ligands/solvent/ions
+        weight(guess_elements,onlyProtein,monoisotopic)
+            molecular weight (Da)
+        center(guess_elements,center,monoisotopic)
+            move system's COM to center
+        cys2cyx()
+            change resName of CYS to CYX if corresponds
+        guess_his()
+            change HIS to corresponding HID/HIE/HIP
+        guess_glh()
+            change GLU to GLH if corresponds
+        guess_ash()
+            change ASP to ASH if corresponds
+        guess_lyn()
+            change LYS to LYN if corresponds
+        guess_protonres()
+            change resName based on protonation for HIS/GLU/ASP/LYS
+            shortcut to call guess_his()/guess_glh()/guess_ash()/guess_lyn()
+    '''
 
     def __init__( self ):
-        self.pdb = []
         self.title = ''
+        self.pdb = []
 
     def __del__( self ):
-        del self.pdb
         del self.title
+        del self.pdb
 
     ## read pdb from file ---------------------------------------------
     def read( self, file, strict=True ):
@@ -628,7 +714,7 @@ class pdb:
 
     ## write dynamo ligand opls to file -------------------------------
     def write_ligand( self, ligand ):
-        '''Write dynamo ligand opls file'''
+        '''Write dynamo ligand topology file'''
         file="ligand_"+ligand
         # get ligand lines index
         lig_index = [i for i, n in enumerate(self.pdb) if n['resName']==ligand]
