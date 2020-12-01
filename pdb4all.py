@@ -3,8 +3,8 @@
 
 # File: pdb4all.py
 # Description : Protein conversion between common pdb formats and name conventions
-# Version : 0.3.2
-# Last update : 16-11-2020
+# Version : 0.3.3
+# Last update : 01-12-2020
 # Author : Sergio Boneta
 
 #######################################################################
@@ -63,7 +63,7 @@ import sys
 import math as m
 import argparse
 
-__version__ = '0.3.2'
+__version__ = '0.3.3'
 
 #######################################################################
 ##  PARSER                                                           ##
@@ -1153,7 +1153,7 @@ class pdb:
     @property
     def ssbonds( self ):
         '''S-S bonds list: [[ #resSeq, #resSeq ]]'''
-        ss_bond_thr = 6.0  # maximum distance to consider S-S bond (A)
+        ss_bond_thr = 3.0  # maximum distance to consider S-S bond (A)
         # get lines from SG atoms from CYX
         sg = [ line for n, line in enumerate(self.pdb) if line['name']=='SG' and line['resName']=='CYX' ]
         # calculate upper distance matrix, consider bond if below threshold
