@@ -3,8 +3,8 @@
 
 # File: pdb4all.py
 # Description : Protein conversion between common pdb formats and name conventions
-# Version : 0.3.3
-# Last update : 01-12-2020
+# Version : 0.3.4
+# Last update : 02-12-2020
 # Author : Sergio Boneta
 
 #######################################################################
@@ -63,7 +63,7 @@ import sys
 import math as m
 import argparse
 
-__version__ = '0.3.3'
+__version__ = '0.3.4'
 
 #######################################################################
 ##  PARSER                                                           ##
@@ -1250,6 +1250,7 @@ if __name__ == '__main__':
         my_pdb.write_intseq(outfile)
     else:
         if outformat == 'gmx':
+            my_pdb.substitute('name', 'HXT', 'OXT')
             standard_preparation(my_pdb, inpformat, outformat, outff)
             my_pdb.guess_protonres()
             if args.center: my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)
