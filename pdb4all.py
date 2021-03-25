@@ -381,6 +381,7 @@ rosetta_atoms = {
 # resName : segment
 ions = { 'CL' : 'CL',
          'NA' : 'NA',
+         'SOD' : 'SOD',
         #  'CA' : 'CA',
          'MG' : 'MG',
          'K'  : 'K' ,
@@ -942,7 +943,7 @@ class pdb:
             elif resName in solvent:
                 n['segment'] = solvent[resName]
             elif resName in ions:
-                n['segment'] = ions[resName]
+                n['segment'] = "ION"
             elif resName in ligands:
                 n['segment'] = segment_letters[ligands.index(resName) + 1]
 
@@ -1261,6 +1262,7 @@ if __name__ == '__main__':
             my_pdb.cys2cyx()
             my_pdb.remove('name', 'OC2')
             my_pdb.substitute('name', 'OC1', 'O')
+            my_pdb.substitute('resName', 'NA', 'SOD')
             my_pdb.guess_his()
             my_pdb.renum_res(continuous=False, protectProtein=False, guess_segments=True)
             my_pdb.renum_atoms()
