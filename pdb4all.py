@@ -49,8 +49,6 @@ Functions
 ---------
 
     standard_preparation
-    gro2one
-
 """
 
 #######################################################################
@@ -63,7 +61,7 @@ import sys
 import math as m
 import argparse
 
-__version__ = '0.3.4'
+__version__ = '0.3.5'
 
 #######################################################################
 ##  PARSER                                                           ##
@@ -133,11 +131,6 @@ def __parserbuilder():
                         action='store_false',
                         help='read simplified pdb based on common columns\n'+
                         '  ATOM/HETATM  #Atom  Atom  Res  [Chain]  #Res  X  Y  Z  Occup  TempFac  [Segment]')
-    parser.add_argument('--gro2one',
-                        metavar='.gro',
-                        nargs=2,
-                        help='take two .gro and append second to first')
-
     return parser
 
 
@@ -1183,37 +1176,11 @@ def standard_preparation( molec, inpformat, outformat, ff='amber' ):
     molec.canonical_order(outformat)
     molec.guess_elements(keepknown=False)
 
-##  gro2one  #####################################
-def gro2one( molec1, molec2 ):
-    '''Append second .gro file to first'''
-    # read molecule 2
-    with open(molec2, 'r') as mol2:
-        m2 = mol2.readlines()
-    # read and write molecule 1
-    with open(molec1, 'r+') as mol1:
-        m1 = mol1.readlines()
-        mol1.seek(0)  # go to beginning
-        # update number of atoms
-        m1[1] = str( int(m1[1]) + int(m2[1]) ) + '\n'
-        # delete title, number of atoms and space of molecule 1
-        del m2[0:2]; del m2[-1]
-        m1 = m1[:-1] + m2 + [m1[-1]]
-        for line in m1:
-            mol1.write(str(line))
-        mol1.truncate()
-
-
 
 #######################################################################
 ##  MAIN                                                             ##
 #######################################################################
 if __name__ == '__main__':
-
-    # check especial options
-    if len(sys.argv)>1 and sys.argv[1] == '--gro2one':
-        gro2one(sys.argv[2], sys.argv[3])
-        sys.stderr.write("{0}, {1} --> {0}\n".format(sys.argv[2], sys.argv[3]))
-        sys.exit()
 
     # parser
     parser = __parserbuilder()
