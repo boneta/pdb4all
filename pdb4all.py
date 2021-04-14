@@ -3,8 +3,8 @@
 
 # File: pdb4all.py
 # Description : Protein conversion between common pdb formats and name conventions
-# Version : 0.3.4
-# Last update : 02-12-2020
+# Version : 0.3.6
+# Last update : 14-04-2021
 # Author : Sergio Boneta
 
 #######################################################################
@@ -61,7 +61,7 @@ import sys
 import math as m
 import argparse
 
-__version__ = '0.3.5'
+__version__ = '0.3.6'
 
 #######################################################################
 ##  PARSER                                                           ##
@@ -435,6 +435,8 @@ class pdb:
 
         Methods
         -------
+        __init__(file)
+            initalization and optional read
         read(file,strict)
             read pdb from file
         write(file,title,remark4,renum_atoms,onlyProtein,notProtein)
@@ -490,9 +492,12 @@ class pdb:
             shortcut to call guess_his()/guess_glh()/guess_ash()/guess_lyn()
     '''
 
-    def __init__( self ):
+    def __init__( self, file=None ):
+        '''Class initialization'''
         self.title = ''
         self.pdb = []
+        if file is not None:
+            self.read(file)
 
     def __del__( self ):
         del self.title
