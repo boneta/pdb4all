@@ -3,8 +3,8 @@
 
 # File: pdb4all.py
 # Description : Protein conversion between common pdb formats and name conventions
-# Version : 0.3.6
-# Last update : 14-04-2021
+# Version : 0.3.7
+# Last update : 22-04-2021
 # Author : Sergio Boneta
 
 #######################################################################
@@ -14,7 +14,7 @@
 #######################################################################
 #
 #
-# Copyright (C) 2020, Sergio Boneta
+# Copyright (C) 2021, Sergio Boneta
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -714,7 +714,7 @@ class pdb:
     ## write dynamo ligand opls to file -------------------------------
     def write_ligand( self, ligand ):
         '''Write dynamo ligand topology file'''
-        file="ligand_"+ligand
+        file=ligand+".ff"
         # get ligand lines index
         lig_index = [i for i, n in enumerate(self.pdb) if n['resName']==ligand]
         # bonds: calculate upper distance matrix, consider bond if below threshold
