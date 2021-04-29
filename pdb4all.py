@@ -4,7 +4,7 @@
 # File: pdb4all.py
 # Description : Protein conversion between common pdb formats and name conventions
 # Version : 0.3.7
-# Last update : 22-04-2021
+# Last update : 29-04-2021
 # Author : Sergio Boneta
 
 #######################################################################
@@ -61,7 +61,7 @@ import sys
 import math as m
 import argparse
 
-__version__ = '0.3.6'
+__version__ = '0.3.7'
 
 #######################################################################
 ##  PARSER                                                           ##
@@ -1232,8 +1232,8 @@ if __name__ == '__main__':
         elif outformat == 'dynamo':
             standard_preparation(my_pdb, inpformat, outformat, outff)
             my_pdb.cys2cyx()
-            my_pdb.remove('name', 'OC2')
             my_pdb.substitute('name', 'OC1', 'O')
+            my_pdb.substitute('name', 'OC2', 'OXT')
             my_pdb.substitute('resName', 'NA', 'SOD')
             my_pdb.guess_his()
             my_pdb.renum_res(continuous=False, protectProtein=False, guess_segments=True)
