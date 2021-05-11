@@ -3,8 +3,8 @@
 
 # File: pdb4all.py
 # Description : Protein conversion between common pdb formats and name conventions
-# Version : 0.3.7
-# Last update : 29-04-2021
+# Version : 0.3.8
+# Last update : 11-05-2021
 # Author : Sergio Boneta
 
 #######################################################################
@@ -59,9 +59,10 @@ Functions
 import os
 import sys
 import math as m
+from copy import deepcopy
 import argparse
 
-__version__ = '0.3.7'
+__version__ = '0.3.8'
 
 #######################################################################
 ##  PARSER                                                           ##
@@ -259,11 +260,10 @@ Ptable = {  'H'  : { 'N':   1, 'm':   1.00782503223, 'm_std':   (1.00784 + 1.008
             'Lv' : { 'N': 116, 'm': 293.           , 'm_std':  293. },
             'Ts' : { 'N': 117, 'm': 292.           , 'm_std':  292. },
             'Og' : { 'N': 118, 'm': 294.           , 'm_std':  294. } }
+Ptable_inv_n = { j['N']:i for i, j in Ptable.items() }
 Ptable.update({ 'D'  : { 'N':   1, 'm':   2.01410177812, 'm_std':    2.01410177812 },
                 'T'  : { 'N':   1, 'm':   3.0160492779 , 'm_std':    3.0160492779  } })
 Ptable_upper = { i.upper():j for i,j in Ptable.items() }
-
-
 
 ## AminoAcids ·························································
 aa_letters = {'ALA':'A','ARG':'R','ASN':'N','ASP':'D','CYS':'C','GLU':'E','GLN':'Q','GLY':'G','HIS':'H','ILE':'I',
@@ -436,9 +436,11 @@ class pdb:
         Methods
         -------
         __init__(file)
-            initalization and optional read
+            initalization and optional pdb read
         read(file,strict)
             read pdb from file
+        read_crd(file)
+            read dynamo's crd from file
         write(file,title,remark4,renum_atoms,onlyProtein,notProtein)
             write pdb to file
         write_fasta(file,gaps)
@@ -568,6 +570,55 @@ class pdb:
                 except: newline.update({ 'segment' : str('') })
 
             self.pdb.append(newline)
+
+    ## read crd from file ---------------------------------------------
+    def read_crd( self, file, ):
+        '''Read dynamo's crd from file'''
+
+        # initialize object (in case of reuse)
+        self.__init__()
+
+        # open file
+        with open( file, 'rt' ) as inp:
+            incrd = inp.readlines()
+            incrd = map(str.strip, incrd)
+
+        # convert to pdb list of dictionaries
+        a = { 'ATOM'       : "ATOM",
+            'serial'     : 0,
+            'name'       : "",
+            'altLoc'     : "",
+            'resName'    : "",
+            'chainID'    : "",
+            'resSeq'     : 0,
+            'iCode'      : "",
+            'x'          : 0.0,
+            'y'          : 0.0,
+            'z'          : 0.0,
+            'occupancy'  : 0.0,
+            'tempFactor' : 0.0,
+            'segment'    : "",
+            'element'    : "",
+            'charge'     : "" }
+        for line in incrd:
+            if line.startswith('!') or not line: continue
+            line = line.split("!")[0].split()   # to list and remove trailing comments
+            print(line)
+            if line[0].lower() == "subsystem":
+                a['segment'] = str(line[2])
+            elif line[0].lower() == "residue":
+                a['resSeq']  = int(line[1])
+                a['resName'] = str(line[2])
+            elif len(line) != 6:
+                continue
+            else:
+                a['serial']  = int(line[0])
+                a['name']    = str(line[1])
+                a['element'] = Ptable_inv_n[int(line[2])]
+                a['x']       = float(line[3])
+                a['y']       = float(line[4])
+                a['z']       = float(line[5])
+                self.pdb.append(deepcopy(a))
 
     ## write pdb to file ----------------------------------------------
     def write( self, file, title=False, remark4=False, renum_atoms=True, onlyProtein=False, notProtein=False ):
@@ -1212,9 +1263,15 @@ if __name__ == '__main__':
             baseout = basein + "_" + outformat
             outfile = baseout + ".pdb"
 
-    # read pdb
+    # read crd or pdb
     my_pdb = pdb()
-    my_pdb.read(infile, strict=args.simple)
+    if infile.split('.')[-1] == 'crd':
+        my_pdb.read_crd(infile)
+    else:
+        my_pdb.read(infile, strict=args.simple)
+
+    my_pdb.write("test.pdb")
+    my_pdb.write_crd("test.crd")
 
     # main selection
     if outformat == 'fasta':
