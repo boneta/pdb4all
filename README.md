@@ -3,7 +3,7 @@
 
 ### Usage
 ```
-  pdb4all.py <options> .pdb
+  pdb4all <options> .pdb
 ```
 
 ### Currently supported ForceFields name conventions
