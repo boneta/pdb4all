@@ -1,2 +1,9 @@
 *.pyc
-__pycache__
+**/__pycache__
+
+.vscode
+
+# distribution / packaging
+build/
+dist/
+*.egg-info
