@@ -117,9 +117,6 @@ def main():
     else:
         my_pdb.read(infile, strict=args.simple)
 
-    my_pdb.write("test.pdb")
-    my_pdb.write_crd("test.crd")
-
     # main selection
     if outformat == 'fasta':
         my_pdb.write_fasta(outfile, gaps=False)
