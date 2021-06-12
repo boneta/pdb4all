@@ -71,6 +71,8 @@ class PDB:
             write pdb to file
         write_fasta(file,gaps)
             write fasta to file
+        write_xyz(file)
+            write XYZ to file
         write_intseq(file)
             write sequence in fDynamo's interaction format to file
         write_crd(file)
@@ -296,6 +298,17 @@ class PDB:
             for n in range(nline):
                 formatted_line = "{:<s}".format(''.join(seq[0+n*70:70+n*70]))
                 outp.write( formatted_line + "\n" )
+
+    ## write XYZ to file ----------------------------------------------
+    def write_xyz( self, file ):
+        '''Write XYZ file'''
+        self.guess_elements()
+        with open( file, 'wt' ) as outp:
+            outp.write(" {}\n".format(self.natoms))
+            outp.write(" {}\n".format(self.title))
+            for atom in self.pdb:
+                outp.write(" {:<6s}  {:>18.10f} {:>18.10f} {:>18.10f}\n"
+                           .format(atom['element'], atom['x'], atom['y'], atom['z']))
 
     ## write interaction sequence to file -----------------------------
     def write_intseq( self, file ):

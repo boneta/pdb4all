@@ -8,7 +8,7 @@ with open(os.path.join(current_path, "README.md")) as f:
 
 setuptools.setup(
     name="pdb4all",
-    version='0.4.1',
+    version='0.4.2',
     description="Convert between common protein pdb formats and names ",
     long_description=readme_text,
     long_description_content_type="text/markdown",
@@ -16,7 +16,7 @@ setuptools.setup(
     author="Sergio Boneta",
     author_email="boneta@unizar.es",
     license="GPLv3",
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python :: 3",
