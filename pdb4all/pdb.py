@@ -67,6 +67,8 @@ class PDB:
             read pdb from file
         read_crd(file)
             read dynamo's crd from file
+        read_xyz(file)
+            read XYZ from file
         write(file,title,remark4,renum_atoms,onlyProtein,notProtein)
             write pdb to file
         write_fasta(file,gaps)
@@ -122,6 +124,25 @@ class PDB:
             shortcut to call guess_his()/guess_glh()/guess_ash()/guess_lyn()
     '''
 
+    atom_empty = {
+        'ATOM'       : "ATOM",
+        'serial'     : 0,
+        'name'       : "",
+        'altLoc'     : "",
+        'resName'    : "",
+        'chainID'    : "",
+        'resSeq'     : 0,
+        'iCode'      : "",
+        'x'          : 0.0,
+        'y'          : 0.0,
+        'z'          : 0.0,
+        'occupancy'  : 0.0,
+        'tempFactor' : 0.0,
+        'segment'    : "",
+        'element'    : "",
+        'charge'     : ""
+        }
+
     def __init__( self, file=None ):
         '''Class initialization'''
         self.title = ''
@@ -143,7 +164,7 @@ class PDB:
         # open file
         with open( file, 'rt' ) as inp:
             inpdb = inp.readlines()
-            inpdb = map(str.strip, inpdb)
+            inpdb = [line.strip() for line in inpdb if line.strip()]
 
         # create pdb list of dictionaries
         for line in inpdb:
@@ -191,8 +212,8 @@ class PDB:
                             'z'          : float(line[7+c]),
                             'occupancy'  : float(line[8+c]),
                             'tempFactor' : float(line[9+c]),
-                            'altLoc' : str(''), 'chainID' : str(''), 'iCode' : str(''),
-                            'element' : str(''), 'charge' : str('') }
+                            'altLoc' : '', 'chainID' : '', 'iCode' : '',
+                            'element' : '', 'charge' : '' }
                 # check if segment column present
                 try: newline.update({ 'segment': str(line[10+c]) })
                 except: newline.update({ 'segment' : str('') })
@@ -209,29 +230,12 @@ class PDB:
         # open file
         with open( file, 'rt' ) as inp:
             incrd = inp.readlines()
-            incrd = map(str.strip, incrd)
+            incrd = [line.strip() for line in incrd if line.strip() and not line.startswith('!')]
 
         # convert to pdb list of dictionaries
-        a = { 'ATOM'       : "ATOM",
-            'serial'     : 0,
-            'name'       : "",
-            'altLoc'     : "",
-            'resName'    : "",
-            'chainID'    : "",
-            'resSeq'     : 0,
-            'iCode'      : "",
-            'x'          : 0.0,
-            'y'          : 0.0,
-            'z'          : 0.0,
-            'occupancy'  : 0.0,
-            'tempFactor' : 0.0,
-            'segment'    : "",
-            'element'    : "",
-            'charge'     : "" }
+        a = deepcopy(self.atom_empty)
         for line in incrd:
-            if line.startswith('!') or not line: continue
             line = line.split("!")[0].split()   # to list and remove trailing comments
-            print(line)
             if line[0].lower() == "subsystem":
                 a['segment'] = str(line[2])
             elif line[0].lower() == "residue":
@@ -247,6 +251,30 @@ class PDB:
                 a['y']       = float(line[4])
                 a['z']       = float(line[5])
                 self.pdb.append(deepcopy(a))
+
+    ## read XYZ from file ---------------------------------------------
+    def read_xyz( self, file, ):
+        '''Read XYZ from file'''
+
+        # initialize object (in case of reuse)
+        self.__init__()
+
+        # open file
+        with open( file, 'rt' ) as inp:
+            inxyz = inp.readlines()
+            inxyz = [line.strip() for line in inxyz if line.strip()]
+
+        # number of atoms and comment line
+        natoms = int(inxyz.pop(0))
+        self.title = str(inxyz.pop(0))
+
+        # convert to pdb list of dictionaries
+        a = deepcopy(self.atom_empty)
+        for n in range(natoms):
+            line = inxyz[n].split()
+            a['element'] = str(line.pop(0))
+            a['x'], a['y'], a['z'] = map(float, line)
+            self.pdb.append(deepcopy(a))
 
     ## write pdb to file ----------------------------------------------
     def write( self, file, title=False, remark4=False, renum_atoms=True, onlyProtein=False, notProtein=False ):
