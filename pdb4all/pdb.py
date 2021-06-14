@@ -87,6 +87,8 @@ class PDB:
             change matching values of field
         clean_field(field,value)
             change all values of field to zero/empty/value
+        findall(**field_and_values)
+            find a list of atom index that match all fields
         remove(field,value)
             remove atoms that match field
         all2ATOM()
@@ -507,7 +509,7 @@ class PDB:
         '''Makes field zero/empty or value'''
 
         # check field
-        if field not in {'ATOM', 'name', 'altLoc', 'resName', 'chainID', 'iCode', 'segment', 'element', 'charge', 'serial', 'resSeq', 'x', 'y', 'z', 'occupancy', 'tempFactor' }:
+        if field not in self.atom_empty.keys():
             raise ValueError("Not valid field")
 
         # check input value or empty
@@ -521,23 +523,31 @@ class PDB:
             value = 0.0
 
         # substitute field value
-        for n in self.pdb: n[field] = value
+        for n in self.pdb:
+            n[field] = value
+
+    ## return atoms that match fields ---------------------------------
+    def findall( self, **field_and_values ):
+        '''Find a list of atom index that match all fields'''
+        
+        # check fields
+        if field_and_values.keys() - self.atom_empty.keys():
+            raise ValueError("Not valid field provided")
+
+        return [n for n, atom in enumerate(self.pdb)
+                if all(atom[key]==value for key, value in field_and_values.items())]
 
     ## remove atom based on field -------------------------------------
     def remove( self, field, value ):
         '''Remove atoms based on match on a field'''
-        n = 0
-        while n < self.natoms:
-            if self.pdb[n][field] == value:
-                del self.pdb[n]
-            else:
-                n += 1
+        matching_index = self.findall(**{field:value})
+        for n in sorted(matching_index, reverse=True):
+            del self.pdb[n]
 
     ## all to ATOM ----------------------------------------------------
     def all2ATOM( self ):
         '''Change all ATOM/HETATM to ATOM'''
-        for n in self.pdb:
-            n['ATOM'] = 'ATOM'
+        self.clean_field('ATOM', 'ATOM')
 
     ## transate resNames between ff -----------------------------------
     def translate_residues( self, destination, origin=None ):
