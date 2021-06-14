@@ -17,7 +17,7 @@
 """
 
 
-## Periodic Table ·····················································
+## Periodic Table -----------------------------------------------------
 # www.nist.gov/pml/atomic-weights-and-isotopic-compositions-relative-atomic-masses
 # m: mass of most common isotope,  m_std: standard atomic weight
 Ptable = { 
@@ -147,7 +147,7 @@ Ptable.update({
     )
 Ptable_upper = { i.upper():j for i,j in Ptable.items() }
 
-## AminoAcids ·························································
+## AminoAcids ---------------------------------------------------------
 aa_letters = {'ALA':'A','ARG':'R','ASN':'N','ASP':'D','CYS':'C','GLU':'E','GLN':'Q','GLY':'G','HIS':'H','ILE':'I',
               'LEU':'L','LYS':'K','MET':'M','PHE':'F','PRO':'P','SER':'S','THR':'T','TRP':'W','TYR':'Y','VAL':'V'}
 aa_letters.update({'HID':'H', 'HIE':'H', 'HIP':'H', 'CYX':'C', 'CYM':'C', 'LYN':'K', 'ASH':'D', 'GLH':'E'})
@@ -157,7 +157,7 @@ aa_letters.update({'SEC':'U'})
 # aa set (more efficiency)
 aa = { i for i in aa_letters.keys() }
 
-## Ions ·······························································
+## Ions ---------------------------------------------------------------
 # resName : segment
 ions = {
     'CL' : 'CL',
@@ -172,10 +172,10 @@ ions = {
     'ZN' : 'ZN'
     }
 
-## Solvent ····························································
+## Solvent ------------------------------------------------------------
 # resName : segment
 solvent = { 'SOL' : 'BOX' }
 
-## Segments ···························································
+## Segments -----------------------------------------------------------
 segment_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 
