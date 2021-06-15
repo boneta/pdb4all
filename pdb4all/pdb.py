@@ -264,7 +264,7 @@ class PDB:
         # open file
         with open( file, 'rt' ) as inp:
             inxyz = inp.readlines()
-            inxyz = map(str.strip, inxyz)
+            inxyz = [line.strip() for line in inxyz]
 
         # number of atoms and comment line
         natoms = int(inxyz.pop(0))
