@@ -48,6 +48,8 @@ class PDB:
             number of total residues
         nseg : int
             number of segments
+        xyz : list
+            list of coordinates [[x,y,z]]
         segments : dic
             dictionary of segmenets: {seg:#res}
         sequence : list
@@ -836,6 +838,12 @@ class PDB:
     def nseg( self ):
         '''Number of segments'''
         return len(self.segments.keys())
+
+    ## list of list of coordinates ------------------------------------
+    @property
+    def xyz( self ):
+        '''List of list of coordinates [[x,y,z]]'''
+        return [[a['x'], a['y'], a['z']] for a in self.pdb]
 
     ## dictionary of segments -----------------------------------------
     @property
