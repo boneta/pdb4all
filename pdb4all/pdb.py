@@ -85,8 +85,6 @@ class PDB:
             write fDynamo's seq to file
         write_ligand(ligand)
             write fDynamo's topology of ligand to file
-        pymol_sele_macro(atom_dict)
-            build a PyMOL's selection macro notation for an atom
         substitute(field,origin,destination,protectProtein,onlyProtein)
             change matching values of field
         clean_field(field,value)
@@ -128,6 +126,11 @@ class PDB:
         guess_protonres()
             change resName based on protonation for HIS/GLU/ASP/LYS
             shortcut to call guess_his()/guess_glh()/guess_ash()/guess_lyn()
+
+        Static Methods
+        --------------
+        pymol_sele_macro(atom_dict)
+            build a PyMOL's selection macro notation for an atom
     '''
 
     atom_empty = {
@@ -492,16 +495,6 @@ class PDB:
                 if nline % 3 == 0:
                     nline = 0
                     outp.write("\n")
-
-    ## build a PyMOL's selection macro notation for an atom -----------
-    def pymol_sele_macro( self, atom_dict ):
-        '''Build a PyMOL's selection macro notation for an atom'''
-        # https://pymolwiki.org/index.php/Selection_Macros
-        # /object-name/segi-identifier/chain-identifier/resi-identifier/name-identifier
-        fields = [str(atom_dict[k]) if atom_dict[k] else "" for k in ('segment', 'chainID', 'name')]
-        residue = [str(atom_dict[k]) for k in ('resName', 'resSeq') if atom_dict[k]]
-        fields.insert(2, "`".join(residue))
-        return "//{}".format("/".join(fields))
 
     ## substitute field -----------------------------------------------
     def substitute( self, field, origin, destination, protectProtein=False, onlyProtein=False ):
@@ -918,6 +911,17 @@ class PDB:
     def protein_weight( self ):
         '''Molecular average protein weight (Da)'''
         return self.weight( guess_elements=True, onlyProtein=True, monoisotopic=False )
+
+    ## build a PyMOL's selection macro notation for an atom -----------
+    @staticmethod
+    def pymol_sele_macro( atom_dict ):
+        '''Build a PyMOL's selection macro notation for an atom'''
+        # https://pymolwiki.org/index.php/Selection_Macros
+        # /object-name/segi-identifier/chain-identifier/resi-identifier/name-identifier
+        fields = [str(atom_dict[k]) if atom_dict[k] else "" for k in ('segment', 'chainID', 'name')]
+        residue = [str(atom_dict[k]) for k in ('resName', 'resSeq') if atom_dict[k]]
+        fields.insert(2, "`".join(residue))
+        return "//{}".format("/".join(fields))
 
 
 ##  Standard protein preparation  #####################################
