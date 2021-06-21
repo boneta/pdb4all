@@ -85,6 +85,8 @@ class PDB:
             write fDynamo's seq to file
         write_ligand(ligand)
             write fDynamo's topology of ligand to file
+        pymol_sele_macro(atom_dict)
+            build a PyMOL's selection macro notation for an atom
         substitute(field,origin,destination,protectProtein,onlyProtein)
             change matching values of field
         clean_field(field,value)
@@ -225,7 +227,7 @@ class PDB:
             self.pdb.append(newline)
 
     ## read crd from file ---------------------------------------------
-    def read_crd( self, file, ):
+    def read_crd( self, file ):
         '''Read dynamo's crd from file'''
 
         # initialize object (in case of reuse)
@@ -257,7 +259,7 @@ class PDB:
                 self.pdb.append(deepcopy(a))
 
     ## read XYZ from file ---------------------------------------------
-    def read_xyz( self, file, ):
+    def read_xyz( self, file ):
         '''Read XYZ from file'''
 
         # initialize object (in case of reuse)
@@ -490,6 +492,16 @@ class PDB:
                 if nline % 3 == 0:
                     nline = 0
                     outp.write("\n")
+
+    ## build a PyMOL's selection macro notation for an atom -----------
+    def pymol_sele_macro( self, atom_dict ):
+        '''Build a PyMOL's selection macro notation for an atom'''
+        # https://pymolwiki.org/index.php/Selection_Macros
+        # /object-name/segi-identifier/chain-identifier/resi-identifier/name-identifier
+        fields = [str(atom_dict[k]) if atom_dict[k] else "" for k in ('segment', 'chainID', 'name')]
+        residue = [str(atom_dict[k]) for k in ('resName', 'resSeq') if atom_dict[k]]
+        fields.insert(2, "`".join(residue))
+        return "//{}".format("/".join(fields))
 
     ## substitute field -----------------------------------------------
     def substitute( self, field, origin, destination, protectProtein=False, onlyProtein=False ):
