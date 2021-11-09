@@ -7,10 +7,6 @@
   -------
     pdb
 
-  Functions
-  ---------
-    standard_preparation
-
 """
 
 import math as m
@@ -126,6 +122,9 @@ class PDB:
         guess_protonres()
             change resName based on protonation for HIS/GLU/ASP/LYS
             shortcut to call guess_his()/guess_glh()/guess_ash()/guess_lyn()
+
+        standard_preparation()
+            standard protein preparation
 
         Static Methods
         --------------
@@ -923,12 +922,15 @@ class PDB:
         fields.insert(2, "`".join(residue))
         return "//{}".format("/".join(fields))
 
+    ## standard protein preparation -----------------------------------
+    def standard_preparation( self, inpformat, outformat, ff='amber' ):
+        '''
+            Standard protein preparation
 
-##  Standard protein preparation  #####################################
-def standard_preparation( molec, inpformat, outformat, ff='amber' ):
-    '''Standard protein preparation'''
-    molec.all2ATOM()
-    molec.translate_residues(ff, origin=None)
-    molec.translate_names(outformat, origin=inpformat)
-    molec.canonical_order(outformat)
-    molec.guess_elements(keepknown=False)
+            all2ATOM, translate_residues, translate_names, canonical_order, guess_elements
+        '''
+        self.all2ATOM()
+        self.translate_residues(ff, origin=None)
+        self.translate_names(outformat, origin=inpformat)
+        self.canonical_order(outformat)
+        self.guess_elements(keepknown=False)
