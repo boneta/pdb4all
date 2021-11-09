@@ -10,7 +10,7 @@ import sys
 import argparse
 
 from pdb4all import __version__
-from pdb4all.pdb import PDB, standard_preparation
+from pdb4all.pdb import PDB
 
 
 ##  PARSER  ###########################################################
@@ -42,17 +42,19 @@ def __parserbuilder():
                         type=str,
                         help='input pdb file')
     parser.add_argument('-i',
-                        required=True,
+                        required=False,
                         metavar='<format>',
                         type=str,
                         choices=input_formats,
-                        help='input pdb format (software)')
+                        default='maestro',
+                        help='input pdb format (def: maestro)')
     parser.add_argument('-o',
-                        required=True,
+                        required=False,
                         metavar='<format>',
                         type=str,
                         choices=output_formats,
-                        help='output pdb format (software)')
+                        default='gmx',
+                        help='output pdb format (def: gmx)')
     parser.add_argument('-O',
                         metavar='.pdb',
                         type=str,
@@ -125,13 +127,13 @@ def main():
     else:
         if outformat == 'gmx':
             my_pdb.substitute('name', 'HXT', 'OXT')
-            standard_preparation(my_pdb, inpformat, outformat, outff)
+            my_pdb.standard_preparation(inpformat, outformat, outff)
             my_pdb.guess_protonres()
             if args.center: my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)
             my_pdb.write(outfile, title=True, remark4=True, renum_atoms=True, onlyProtein=True)
 
         elif outformat == 'dynamo':
-            standard_preparation(my_pdb, inpformat, outformat, outff)
+            my_pdb.standard_preparation(inpformat, outformat, outff)
             my_pdb.cys2cyx()
             my_pdb.substitute('name', 'OC1', 'O')
             my_pdb.substitute('name', 'OC2', 'OXT')
