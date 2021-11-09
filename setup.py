@@ -1,12 +1,16 @@
 import os
-import setuptools
+
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 # get text of README.md
 current_path = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(current_path, "README.md")) as f:
     readme_text = f.read()
 
-setuptools.setup(
+setup(
     name="pdb4all",
     version='0.4.9',
     description="Convert between common protein pdb formats and names ",
