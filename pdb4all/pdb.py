@@ -158,10 +158,6 @@ class PDB:
         if file is not None:
             self.read(file)
 
-    def __del__( self ):
-        del self.title
-        del self.pdb
-
     ## read pdb from file ---------------------------------------------
     def read( self, file, strict=True ):
         '''Read PDB file'''
