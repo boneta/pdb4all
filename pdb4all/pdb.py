@@ -158,6 +158,17 @@ class PDB:
         if file is not None:
             self.read(file)
 
+    def __repr__(self):
+        return '<PDB: {:d} atoms :: {:d} protein residues & {:d} ligands>' \
+            .format(self.natoms, self.nres, len(self.ligands))
+
+    def __bool__( self ):
+        return bool(self.pdb) or bool(self.title)
+
+    def __len__( self ):
+        return self.natoms
+
+
     ## read pdb from file ---------------------------------------------
     def read( self, file, strict=True ):
         '''Read PDB file'''
