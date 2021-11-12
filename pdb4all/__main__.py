@@ -71,6 +71,9 @@ def __parserbuilder():
                         choices=ff_formats,
                         default='amber',
                         help='output Force Field format (def: amber)')
+    parser.add_argument('--extract-ligands',
+                        action='store_true',
+                        help='extract ligands to independent .pdb files')
     parser.add_argument('--dynamize',
                         action='store_true',
                         help='extra fDynamo files (.crd, seq, lig_opls)')
@@ -129,8 +132,15 @@ def main():
             my_pdb.substitute('name', 'HXT', 'OXT')
             my_pdb.standard_preparation(inpformat, outformat, outff)
             my_pdb.guess_protonres()
-            if args.center: my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)
-            my_pdb.write(outfile, title=True, remark4=True, renum_atoms=True, onlyProtein=True)
+            if args.center:
+                my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)
+            my_pdb.write(outfile, title=True, remark4=True, renum_atoms=True, onlyProtein=args.extract_ligands)
+            if args.extract_ligands:
+                for ligand in my_pdb.ligands:
+                    my_ligand = PDB()
+                    my_ligand.pdb = [my_pdb.pdb[n] for n in my_pdb.findall(resName=ligand)]
+                    my_ligand.clean_field('ATOM', 'HETATM')
+                    my_ligand.write('lig_' + ligand + '.pdb', remark4=False, renum_atoms=True)
 
         elif outformat == 'dynamo':
             my_pdb.standard_preparation(inpformat, outformat, outff)
@@ -141,7 +151,8 @@ def main():
             my_pdb.guess_his()
             my_pdb.renum_res(continuous=False, protectProtein=False, guess_segments=True)
             my_pdb.renum_atoms()
-            if args.center: my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)
+            if args.center:
+                my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)
             if args.dynamize:
                 my_pdb.write_crd(baseout + '.crd')
                 my_pdb.write_seq(baseout + '.seq', variants=True, ssbonds=True)
