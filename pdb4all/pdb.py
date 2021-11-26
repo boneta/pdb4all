@@ -23,6 +23,10 @@ from pdb4all.rosetta import *
 # PDB Column formatting (simple)
 # ATOM/HETATM  #Atom  Atom  Res  [Chain]  #Res  X  Y  Z  Occup  TempFac  [Segment]
 
+# GRO Strict formatting
+# resSeq  resName  name   serial  x      y      z
+# 1-5     6-10     11-15  16-20   21-28  29-36  37-44
+
 
 ##  Main PDB class  ###################################################
 class PDB:
@@ -63,12 +67,16 @@ class PDB:
             initalization and optional pdb read
         read(file,strict)
             read pdb from file
+        read_gro(file)
+            read GROMACS' gro from file
         read_crd(file)
             read dynamo's crd from file
         read_xyz(file)
             read XYZ from file
         write(file,title,remark4,renum_atoms,onlyProtein,notProtein)
             write pdb to file
+        write_gro(file, renum_atoms)
+            write GROMACS' gro to file
         write_fasta(file,gaps)
             write fasta to file
         write_xyz(file)
@@ -144,7 +152,7 @@ class PDB:
         'x'          : 0.0,
         'y'          : 0.0,
         'z'          : 0.0,
-        'occupancy'  : 0.0,
+        'occupancy'  : 1.0,
         'tempFactor' : 0.0,
         'segment'    : "",
         'element'    : "",
@@ -235,6 +243,37 @@ class PDB:
 
             self.pdb.append(newline)
 
+    ## read gro from file ---------------------------------------------
+    def read_gro( self, file ):
+        '''Read GROMACS' gro from file'''
+
+        # initialize object (in case of reuse)
+        self.__init__()
+
+        # open file
+        with open(file, 'rt') as inp:
+            ingro = inp.readlines()
+            ingro = [line for line in ingro if line.strip()]
+
+        # title
+        self.title = str(ingro.pop(0)).strip()
+        # number of atoms
+        natoms = int(ingro.pop(0))
+
+        # create pdb list of dictionaries
+        for line in ingro[:natoms]:
+            newatom = deepcopy(self.atom_empty)
+            newatom.update({
+                'resSeq': int(line[0:5]),
+                'resName': str(line[5:10]).strip(),
+                'name': str(line[10:15]).strip(),
+                'serial': int(line[15:20]),
+                'x': float(line[20:28])*10.,
+                'y': float(line[28:36])*10.,
+                'z': float(line[36:44])*10.
+                })
+            self.pdb.append(newatom)
+
     ## read crd from file ---------------------------------------------
     def read_crd( self, file ):
         '''Read dynamo's crd from file'''
@@ -318,6 +357,22 @@ class PDB:
                 # write
                 outp.write( formatted_line + "\n" )
             outp.write("END\n")  # final 'END'
+
+    ## write gro to file ----------------------------------------------
+    def write_gro( self, file, renum_atoms=True ):
+        '''Write GROMACS' gro file'''
+        if renum_atoms: self.renum_atoms()
+        with open( file, 'wt' ) as outp:
+            outp.write("{:s}\n  {:d}\n".format(self.title, self.natoms))
+            # write atoms
+            for n in range(self.natoms):
+                line = self.pdb[n].copy()
+                # format gro
+                formatted_line = "{:>5d}{:>5s}{:>5s}{:>5d}{:>8.3f}{:>8.3f}{:>8.3f}" \
+                    .format(line['resSeq'], line['resName'], line['name'], line['serial'], line['x']/10., line['y']/10., line['z']/10.)
+                # write
+                outp.write( formatted_line + "\n" )
+            outp.write("   0.00000   0.00000   0.00000\n")
 
     ## write fasta to file --------------------------------------------
     def write_fasta( self, file, gaps=False ):

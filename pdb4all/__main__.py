@@ -96,11 +96,11 @@ def main():
 
     # names of files
     infile    = args.I
-    basein    = os.path.splitext(infile)[0]
     inpformat = args.i
     outformat = args.o
     inpff     = args.iff
     outff     = args.off
+    basein, extin = os.path.splitext(infile)
     if args.O is not None:
         outfile = args.O
         baseout = os.path.splitext(outfile)[0]
@@ -117,8 +117,10 @@ def main():
 
     # read crd or pdb
     my_pdb = PDB()
-    if infile.split('.')[-1] == 'crd':
+    if extin == '.crd':
         my_pdb.read_crd(infile)
+    elif extin == '.gro':
+        my_pdb.read_gro(infile)
     else:
         my_pdb.read(infile, strict=args.simple)
 
