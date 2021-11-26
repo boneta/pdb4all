@@ -97,6 +97,8 @@ class PDB:
             find a list of atom index that match all fields
         remove(field,value)
             remove atoms that match field
+        remove_ligands()
+            remove all ligands
         all2ATOM()
             change all ATOM/HETATM to ATOM
         translate_residues(destination,origin)
@@ -597,7 +599,6 @@ class PDB:
     ## return atoms that match fields ---------------------------------
     def findall( self, **field_and_values ):
         '''Find a list of atom index that match all fields'''
-        
         # check fields
         if field_and_values.keys() - self.atom_empty.keys():
             raise ValueError("Not valid field provided")
@@ -611,6 +612,12 @@ class PDB:
         matching_index = self.findall(**{field:value})
         for n in sorted(matching_index, reverse=True):
             del self.pdb[n]
+
+    ## remove ligands -------------------------------------------------
+    def remove_ligands( self ):
+        '''Remove all ligands'''
+        for ligand in self.ligands:
+            self.remove('resName', ligand)
 
     ## all to ATOM ----------------------------------------------------
     def all2ATOM( self ):
