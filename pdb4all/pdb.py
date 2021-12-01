@@ -71,6 +71,8 @@ class PDB:
             wrapper to read files based on extension/format
         read_pdb(file,strict)
             read pdb from file
+        read_pqr(file)
+            read APBS' pqr files
         read_gro(file)
             read GROMACS' gro from file
         read_crd(file)
@@ -81,6 +83,8 @@ class PDB:
             wrapper to write files based on extension/format
         write_pdb(file,title,remark4,renum_atoms,onlyProtein,notProtein)
             write pdb to file
+        write_pqr(file, renum_atoms)
+            write APBS' pqr to file
         write_gro(file, renum_atoms)
             write GROMACS' gro to file
         write_fasta(file,gaps)
@@ -188,11 +192,12 @@ class PDB:
     def read( self, file, format=None, **kargs ):
         '''
             Wrapper to read files based on extension/format
-        
-            Supported formats: pdb, gro, crd, xyz
+
+            Supported formats: pdb, pqr, gro, crd, xyz
         '''
         reader = {
             'pdb' : self.read_pdb,
+            'pqr' : self.read_pqr,
             'gro' : self.read_gro,
             'crd' : self.read_crd,
             'xyz' : self.read_xyz
@@ -277,6 +282,11 @@ class PDB:
                 except: newline.update({ 'segment' : str('') })
 
             self.pdb.append(newline)
+
+    ## read pqr from file ---------------------------------------------
+    def read_pqr( self, file ):
+        '''Read APBS' pqr files'''
+        self.read_pdb(file, strict=False)
 
     ## read gro from file ---------------------------------------------
     def read_gro( self, file ):
@@ -370,10 +380,11 @@ class PDB:
         '''
             Wrapper to write files based on extension/format
 
-            Supported formats: pdb, gro, crd, seq, xyz, fasta
+            Supported formats: pdb, pqr, gro, crd, seq, xyz, fasta
         '''
         writer = {
             'pdb' : self.write_pdb,
+            'pqr' : self.write_pqr,
             'gro' : self.write_gro,
             'crd' : self.write_crd,
             'seq' : self.write_seq,
@@ -422,6 +433,25 @@ class PDB:
                 # write
                 outp.write( formatted_line + "\n" )
             outp.write("END\n")  # final 'END'
+
+    ## write pqr to file ----------------------------------------------
+    def write_pqr( self, file, renum_atoms=True ):
+        '''Write PQR file'''
+        # renumerate atoms
+        if renum_atoms: self.renum_atoms()
+        # open file
+        with open( file, 'wt' ) as outp:
+            for n in range(self.natoms):
+                line = deepcopy(self.pdb[n])
+                # correct alignment of atom name
+                if len(line['name']) == 3: line['name'] = ' ' + line['name']
+                # format pqr
+                formatted_line = "{:<6s} {:>4d} {:^4s} {:>3s} {:1s} {:>3d}     {:>7.3f} {:>7.3f} {:>7.3f} {:>5.2f} {:>5.2f}" \
+                    .format( line['ATOM'], line['serial'], line['name'], line['resName'], line['chainID'], line['resSeq'], \
+                    line['x'], line['y'], line['z'], 0.0, 0.0 )
+                # write
+                outp.write( formatted_line + "\n" )
+            outp.write("END\n")
 
     ## write gro to file ----------------------------------------------
     def write_gro( self, file, renum_atoms=True ):
