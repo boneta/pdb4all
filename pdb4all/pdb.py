@@ -10,7 +10,9 @@
 """
 
 import math as m
+import os
 from copy import deepcopy
+from inspect import getfullargspec
 
 from pdb4all.constants import *
 from pdb4all.rosetta import *
@@ -65,7 +67,9 @@ class PDB:
         -------
         __init__(file)
             initalization and optional pdb read
-        read(file,strict)
+        read(file, format)
+            wrapper to read files based on extension/format
+        read_pdb(file,strict)
             read pdb from file
         read_gro(file)
             read GROMACS' gro from file
@@ -73,7 +77,9 @@ class PDB:
             read dynamo's crd from file
         read_xyz(file)
             read XYZ from file
-        write(file,title,remark4,renum_atoms,onlyProtein,notProtein)
+        write(file, format)
+            wrapper to write files based on extension/format
+        write_pdb(file,title,remark4,renum_atoms,onlyProtein,notProtein)
             write pdb to file
         write_gro(file, renum_atoms)
             write GROMACS' gro to file
@@ -178,9 +184,36 @@ class PDB:
     def __len__( self ):
         return self.natoms
 
+    ## read -----------------------------------------------------------
+    def read( self, file, format=None, **kargs ):
+        '''
+            Wrapper to read files based on extension/format
+        
+            Supported formats: pdb, gro, crd, xyz
+        '''
+        reader = {
+            'pdb' : self.read_pdb,
+            'gro' : self.read_gro,
+            'crd' : self.read_crd,
+            'xyz' : self.read_xyz
+            }
+        # assign format based on input argument/file extension/default
+        extension = os.path.splitext(file)[1][1:]
+        if format is not None:
+            if format.lower() in reader:
+                format = format.lower()
+            else:
+                raise ValueError('Unknown format to read: {}'.format(format))
+        elif extension.lower() in reader:
+            format = extension.lower()
+        else:
+            format = 'pdb'
+        # read file based on format & pass only arguments expected by function
+        kargs = {k:v for k,v in kargs.items() if k in getfullargspec(reader[format]).args[1:]}
+        reader[format](file, **kargs)
 
     ## read pdb from file ---------------------------------------------
-    def read( self, file, strict=True ):
+    def read_pdb( self, file, strict=True ):
         '''Read PDB file'''
 
         # initialize object (in case of reuse)
@@ -332,8 +365,38 @@ class PDB:
             a['x'], a['y'], a['z'] = map(float, line)
             self.pdb.append(deepcopy(a))
 
+    ## write ----------------------------------------------------------
+    def write( self, file, format=None, **kargs ):
+        '''
+            Wrapper to write files based on extension/format
+
+            Supported formats: pdb, gro, crd, seq, xyz, fasta
+        '''
+        writer = {
+            'pdb' : self.write_pdb,
+            'gro' : self.write_gro,
+            'crd' : self.write_crd,
+            'seq' : self.write_seq,
+            'xyz' : self.write_xyz,
+            'fasta' : self.write_fasta
+            }
+        # assign format based on input argument/file extension/default
+        extension = os.path.splitext(file)[1][1:]
+        if format is not None:
+            if format.lower() in writer:
+                format = format.lower()
+            else:
+                raise ValueError('Unknown format to write: {}'.format(format))
+        elif extension.lower() in writer:
+            format = extension.lower()
+        else:
+            format = 'pdb'
+        # write file based on format & pass only arguments expected by function
+        kargs = {k:v for k,v in kargs.items() if k in getfullargspec(writer[format]).args[1:]}
+        writer[format](file, **kargs)
+
     ## write pdb to file ----------------------------------------------
-    def write( self, file, title=False, remark4=False, renum_atoms=True, onlyProtein=False, notProtein=False ):
+    def write_pdb( self, file, title=False, remark4=False, renum_atoms=True, onlyProtein=False, notProtein=False ):
         '''Write PDB file'''
         # renumerate atoms
         if renum_atoms: self.renum_atoms()

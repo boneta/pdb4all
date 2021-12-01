@@ -117,12 +117,7 @@ def main():
 
     # read crd or pdb
     my_pdb = PDB()
-    if extin == '.crd':
-        my_pdb.read_crd(infile)
-    elif extin == '.gro':
-        my_pdb.read_gro(infile)
-    else:
-        my_pdb.read(infile, strict=args.simple)
+    my_pdb.read(infile, strict=args.simple)
 
     # main selection
     if outformat == 'fasta':
