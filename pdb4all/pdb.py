@@ -38,7 +38,28 @@ class PDB:
         Attributes
         ----------
         title : str
+        atom_empty : dict
+            dictoriary with empty atom properties
         pdb : list of dic
+            a list of atoms in order, each being a dictionary
+            of properties with defined types:
+                'ATOM'       : str
+                'serial'     : int
+                'name'       : str
+                'altLoc'     : str
+                'resName'    : str
+                'chainID'    : str
+                'resSeq'     : int
+                'iCode'      : str
+                'x'          : float
+                'y'          : float
+                'z'          : float
+                'occupancy'  : float
+                'tempFactor' : float
+                'segment'    : str
+                'element'    : str
+                'charge'     : str
+
 
         Properties
         ----------
