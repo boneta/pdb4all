@@ -12,7 +12,7 @@ with open(os.path.join(current_path, "README.md")) as f:
 
 setup(
     name="pdb4all",
-    version='0.4.13',
+    version='0.4.14',
     description="Convert between common protein pdb formats and names ",
     long_description=readme_text,
     long_description_content_type="text/markdown",

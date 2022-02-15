@@ -11,8 +11,10 @@
 
 import math as m
 import os
+import tempfile
 from copy import deepcopy
 from inspect import getfullargspec
+from urllib.request import urlopen
 
 from pdb4all.constants import *
 from pdb4all.rosetta import *
@@ -100,6 +102,8 @@ class PDB:
             read dynamo's crd from file
         read_xyz(file)
             read XYZ from file
+        fetch(id)
+            fetch PDB and dowload it from RCSB
         write(file, format)
             wrapper to write files based on extension/format
         write_pdb(file,title,remark4,renum_atoms,onlyProtein,notProtein)
@@ -216,7 +220,12 @@ class PDB:
         '''
             Wrapper to read files based on extension/format
 
+            If format is not specified, the extension of the file
+            is used. If the file does not exist but the name looks
+            like a PDB ID, it tries to be fetched.
+
             Supported formats: pdb, pqr, gro, crd, xyz
+
         '''
         reader = {
             'pdb' : self.read_pdb,
@@ -225,6 +234,15 @@ class PDB:
             'crd' : self.read_crd,
             'xyz' : self.read_xyz
             }
+        # check if file exists or is a PDB ID
+        if not os.path.exists(file):
+            if len(file) == 4 and file.isalnum():
+                try:
+                    self.fetch(file)
+                    return
+                except:
+                    pass
+            raise FileNotFoundError(f'No such file or directory: {file}')
         # assign format based on input argument/file extension/default
         extension = os.path.splitext(file)[1][1:]
         if format is not None:
@@ -397,6 +415,18 @@ class PDB:
             a['element'] = str(line.pop(0))
             a['x'], a['y'], a['z'] = map(float, line)
             self.pdb.append(deepcopy(a))
+
+    ## fetch PDB from internet ----------------------------------------
+    def fetch( self, id ):
+        '''Fetch PDB and dowload it from RCSB'''
+        # fetch PDB
+        url = f"https://files.rcsb.org/view/{id}.pdb"
+        pdb_data = urlopen(url).read().decode('utf-8')
+        # write to temporary file and read as PDB
+        with tempfile.NamedTemporaryFile(mode='w', delete=True) as tmp:
+            tmp.write(pdb_data)
+            tmp.flush()
+            self.read_pdb(tmp.name)
 
     ## write ----------------------------------------------------------
     def write( self, file, format=None, **kargs ):
