@@ -148,7 +148,9 @@ class PDB:
             guess segments, one for each group: protein/ligands/solvent/ions
         weight(guess_elements,onlyProtein,monoisotopic)
             molecular weight (Da)
-        center(guess_elements,center,monoisotopic)
+        com(geometric,guess_elements,monoisotopic):
+            calculate center of mass
+        center(center,geometric,guess_elements,monoisotopic)
             move system's COM to center
         cys2cyx()
             change resName of CYS to CYX if corresponds
@@ -867,30 +869,38 @@ class PDB:
         '''Molecular weight (Da)'''
         if guess_elements: self.guess_elements()
         mass = 0.0
-        if monoisotopic: atomic_mass = 'm'
-        else: atomic_mass = 'm_std'
+        atomic_mass = 'm' if monoisotopic else 'm_std'
         for n in self.pdb:
             if not onlyProtein or n['resName'] in aa:
                 mass += Ptable[ n['element'] ][atomic_mass]
         return mass
 
-    ## move com to center ---------------------------------------------
-    def center( self, guess_elements=True, center=[0., 0., 0.], monoisotopic=False ):
-        '''Move system com to the center'''
-        if guess_elements: self.guess_elements()
-        if monoisotopic: atomic_mass = 'm'
-        else: atomic_mass = 'm_std'
-        m_total = self.weight(guess_elements=False, onlyProtein=False, monoisotopic=monoisotopic)
-        com = [0.0, 0.0, 0.0]
+    ## center of mass -------------------------------------------------
+    def com(self, geometric=False,  guess_elements=True, monoisotopic=False):
+        '''Calculate center of mass'''
+        atomic_mass = 'm' if monoisotopic else 'm_std'
+        # calculate total mass
+        if geometric:
+            m_total = float(self.natoms)
+        else:
+            if guess_elements: self.guess_elements()
+            m_total = self.weight(guess_elements=False, onlyProtein=False, monoisotopic=monoisotopic)
         # calculate com
+        com = [0.0, 0.0, 0.0]
         for n in self.pdb:
+            n_mass = 1.0 if geometric else Ptable[n['element']][atomic_mass]
             for i, j in zip( [0,1,2], ['x','y','z'] ):
-                com[i] += n[j] * Ptable[n['element']][atomic_mass]
+                com[i] += n[j] * n_mass
         com = [ i / m_total for i in com ]
-        # move com
+        return com
+
+    ## move COM to center ---------------------------------------------
+    def center(self, center=[0., 0., 0.], geometric=False, guess_elements=True, monoisotopic=False):
+        '''Move system's COM to the center'''
+        com = self.com(geometric=geometric, guess_elements=guess_elements, monoisotopic=monoisotopic)
         for n in self.pdb:
             for i, j in zip( [0,1,2], ['x','y','z'] ):
-                n[j] -= com[i] + center[i]
+                n[j] -= com[i] - center[i]
 
     ## change names CYS for CYX ---------------------------------------
     def cys2cyx( self ):
