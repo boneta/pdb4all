@@ -8,7 +8,7 @@
 #######################################################################
 #
 #
-# Copyright (C) 2021, Sergio Boneta
+# Copyright (C) 2022, Sergio Boneta
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,6 +37,6 @@
 
 """
 
-__version__ = '0.4.14'
+__version__ = '0.4.15'
 
 from pdb4all.pdb import *

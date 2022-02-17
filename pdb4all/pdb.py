@@ -128,12 +128,16 @@ class PDB:
             change matching values of field
         clean_field(field,value)
             change all values of field to zero/empty/value
-        findall(**field_and_values)
-            find a list of atom index that match all fields
-        remove(field,value)
-            remove atoms that match field
+        findall(match_all,**fields_and_values)
+            find a list of atom index that match all/any fields
+        remove(match_all,**fields_and_values)
+            remove all atoms that match all/any fields
         remove_ligands()
             remove all ligands
+        remove_waters()
+            remove all waters
+        keep_only(match_all,**fields_and_values)
+            keep only atoms that match all/any fields
         all2ATOM()
             change all ATOM/HETATM to ATOM
         translate_residues(destination,origin)
@@ -743,19 +747,20 @@ class PDB:
             n[field] = value
 
     ## return atoms that match fields ---------------------------------
-    def findall( self, **field_and_values ):
-        '''Find a list of atom index that match all fields'''
-        # check fields
-        if field_and_values.keys() - self.atom_empty.keys():
+    def findall( self, match_all=True, **fields_and_values ):
+        '''Find a list of atom index that match all/any fields'''
+        # check input fields
+        if fields_and_values.keys() - self.atom_empty.keys():
             raise ValueError("Not valid field provided")
-
+        # find any/all atoms that match
+        matcher = all if match_all else any
         return [n for n, atom in enumerate(self.pdb)
-                if all(atom[key]==value for key, value in field_and_values.items())]
+                if matcher(atom[key]==value for key, value in fields_and_values.items())]
 
-    ## remove atom based on field -------------------------------------
-    def remove( self, field, value ):
-        '''Remove atoms based on match on a field'''
-        matching_index = self.findall(**{field:value})
+    ## remove atoms that match fields ---------------------------------
+    def remove( self, match_all=True, **fields_and_values ):
+        '''Remove all atoms that match all/any fields'''
+        matching_index = self.findall(match_all=match_all, **fields_and_values)
         for n in sorted(matching_index, reverse=True):
             del self.pdb[n]
 
@@ -763,7 +768,20 @@ class PDB:
     def remove_ligands( self ):
         '''Remove all ligands'''
         for ligand in self.ligands:
-            self.remove('resName', ligand)
+            self.remove(resName=ligand)
+
+    ## remove waters --------------------------------------------------
+    def remove_waters( self ):
+        '''Remove all waters (try to)'''
+        water_resNames = ('HOH', 'WAT', 'SOL', 'TIP3', 'TIP4', 'TIP5', 'SPC')
+        for water in water_resNames:
+            self.remove(resName=water)
+
+    ## keep only atoms that match fields --------------------------------
+    def keep_only( self, match_all=True, **fields_and_values ):
+        '''Keep only atoms that match all/any fields'''
+        matching_index = self.findall(match_all=match_all, **fields_and_values)
+        self.pdb = [atom for n, atom in enumerate(self.pdb) if n in matching_index]
 
     ## all to ATOM ----------------------------------------------------
     def all2ATOM( self ):
