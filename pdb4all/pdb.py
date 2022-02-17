@@ -142,10 +142,10 @@ class PDB:
             translate atom names between standards
         canonical_order(canon)
             reorder protein atoms inside residues
-        renum_atoms()
-            renumerate all atoms from 1
-        renum_res(continuous,protectProtein,guess_segments)
-            renumerate residues, each group from 1: protein/ligands/solvent/ions
+        renum_atoms(start)
+            renumber all atoms from 'start' (def: 1)
+        renum_res(start,continuous,protectProtein,guess_segments)
+            renumber residues, each group from 'start' (def: 1): protein/ligands/solvent/ions
         guess_elements(keepknown)
             guess elements of all atoms
         guess_segments(keepknown,useChains)
@@ -423,7 +423,7 @@ class PDB:
         url = f"https://files.rcsb.org/view/{id}.pdb"
         pdb_data = urlopen(url).read().decode('utf-8')
         # write to temporary file and read as PDB
-        with tempfile.NamedTemporaryFile(mode='w', delete=True) as tmp:
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
             tmp.write(pdb_data)
             tmp.flush()
             self.read_pdb(tmp.name)
@@ -462,7 +462,7 @@ class PDB:
     ## write pdb to file ----------------------------------------------
     def write_pdb( self, file, title=False, remark4=False, renum_atoms=True, onlyProtein=False, notProtein=False ):
         '''Write PDB file'''
-        # renumerate atoms
+        # renumber atoms
         if renum_atoms: self.renum_atoms()
         # open file
         with open( file, 'wt' ) as outp:
@@ -490,7 +490,7 @@ class PDB:
     ## write pqr to file ----------------------------------------------
     def write_pqr( self, file, renum_atoms=True ):
         '''Write PQR file'''
-        # renumerate atoms
+        # renumber atoms
         if renum_atoms: self.renum_atoms()
         # open file
         with open( file, 'wt' ) as outp:
@@ -825,17 +825,17 @@ class PDB:
             linen = linen_end +1
             res += 1
 
-    ## renumerate atoms -----------------------------------------------
-    def renum_atoms( self ):
-        '''Renumerate all atoms from 1'''
-        for n in range(self.natoms):
-            self.pdb[n]['serial'] = n + 1
+    ## renumber atoms -------------------------------------------------
+    def renum_atoms( self, start=1 ):
+        '''Renumber all atoms from 'start' (def: 1)'''
+        for id, n in enumerate(self.pdb):
+            n['serial'] = id + start
 
-    ## renumerate residues --------------------------------------------
-    def renum_res( self, continuous=False, protectProtein=False, guess_segments=False ):
-        '''Renumerate residues, each group from 1: Protein / Ligands / Solvent / Ions'''
+    ## renumber residues ----------------------------------------------
+    def renum_res( self, start=1, continuous=False, protectProtein=False, guess_segments=False ):
+        '''Renumber residues, each group from 'start' (def: 1): Protein / Ligands / Solvent / Ions'''
         if guess_segments: self.guess_segments()
-        resSeq = 0
+        resSeq = start - 1
         resSeq_prev = 0
         resName_prev = ''
         segment_prev = ''
@@ -846,12 +846,12 @@ class PDB:
                     resSeq_prev = n['resSeq']
                     resSeq += 1
                 n['resSeq'] = resSeq
-        else:  # renumerate with a new list for each segment
+        else:  # renumber with a new list for each segment
             for n in self.pdb:
                 if protectProtein and n['resName'] in aa: continue
                 if n['segment'] != segment_prev:
                     segment_prev = n['segment']
-                    resSeq = 0
+                    resSeq = start - 1
                 if n['resName'] != resName_prev or n['resSeq'] != resSeq_prev:
                     resName_prev = n['resName']
                     resSeq_prev = n['resSeq']
