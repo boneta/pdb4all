@@ -146,7 +146,8 @@ def main():
             my_pdb.substitute('name', 'OC2', 'OXT')
             my_pdb.substitute('resName', 'NA', 'SOD')
             my_pdb.guess_his()
-            my_pdb.renum_res(continuous=False, protectProtein=False, guess_segments=True)
+            my_pdb.guess_segments(keepknown=True, useChains=True)
+            my_pdb.renum_res(continuous=False, protectProtein=False, guess_segments=False)
             my_pdb.renum_atoms()
             if args.center:
                 my_pdb.center(guess_elements=False, center=[0., 0., 0.], monoisotopic=False)

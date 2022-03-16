@@ -202,25 +202,25 @@ class PDB:
         'charge'     : ""
         }
 
-    def __init__( self, file=None ):
+    def __init__(self, file=None) -> None:
         '''Class initialization'''
         self.title = ''
         self.pdb = []
         if file is not None:
             self.read(file)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '<PDB: {:d} atoms :: {:d} protein residues & {:d} ligands>' \
             .format(self.natoms, self.nres, len(self.ligands))
 
-    def __bool__( self ):
+    def __bool__(self) -> bool:
         return bool(self.pdb) or bool(self.title)
 
-    def __len__( self ):
+    def __len__(self) -> int:
         return self.natoms
 
     ## read -----------------------------------------------------------
-    def read( self, file, format=None, **kargs ):
+    def read(self, file, format=None, **kargs) -> None:
         '''
             Wrapper to read files based on extension/format
 
@@ -263,7 +263,7 @@ class PDB:
         reader[format](file, **kargs)
 
     ## read pdb from file ---------------------------------------------
-    def read_pdb( self, file, strict=True ):
+    def read_pdb(self, file, strict=True) -> None:
         '''Read PDB file'''
 
         # initialize object (in case of reuse)
@@ -329,12 +329,12 @@ class PDB:
             self.pdb.append(newline)
 
     ## read pqr from file ---------------------------------------------
-    def read_pqr( self, file ):
+    def read_pqr(self, file) -> None:
         '''Read APBS' pqr files'''
         self.read_pdb(file, strict=False)
 
     ## read gro from file ---------------------------------------------
-    def read_gro( self, file ):
+    def read_gro(self, file) -> None:
         '''Read GROMACS' gro from file'''
 
         # initialize object (in case of reuse)
@@ -365,7 +365,7 @@ class PDB:
             self.pdb.append(newatom)
 
     ## read crd from file ---------------------------------------------
-    def read_crd( self, file ):
+    def read_crd(self, file) -> None:
         '''Read dynamo's crd from file'''
 
         # initialize object (in case of reuse)
@@ -397,7 +397,7 @@ class PDB:
                 self.pdb.append(deepcopy(a))
 
     ## read XYZ from file ---------------------------------------------
-    def read_xyz( self, file ):
+    def read_xyz(self, file) -> None:
         '''Read XYZ from file'''
 
         # initialize object (in case of reuse)
@@ -421,7 +421,7 @@ class PDB:
             self.pdb.append(deepcopy(a))
 
     ## fetch PDB from internet ----------------------------------------
-    def fetch( self, id ):
+    def fetch(self, id) -> None:
         '''Fetch PDB and dowload it from RCSB'''
         # fetch PDB
         url = f"https://files.rcsb.org/view/{id}.pdb"
@@ -433,7 +433,7 @@ class PDB:
             self.read_pdb(tmp.name)
 
     ## write ----------------------------------------------------------
-    def write( self, file, format=None, **kargs ):
+    def write(self, file, format=None, **kargs) -> None:
         '''
             Wrapper to write files based on extension/format
 
@@ -464,7 +464,7 @@ class PDB:
         writer[format](file, **kargs)
 
     ## write pdb to file ----------------------------------------------
-    def write_pdb( self, file, title=False, remark4=False, renum_atoms=True, onlyProtein=False, notProtein=False ):
+    def write_pdb(self, file, title=False, remark4=False, renum_atoms=True, onlyProtein=False, notProtein=False) -> None:
         '''Write PDB file'''
         # renumber atoms
         if renum_atoms: self.renum_atoms()
@@ -492,7 +492,7 @@ class PDB:
             outp.write("END\n")  # final 'END'
 
     ## write pqr to file ----------------------------------------------
-    def write_pqr( self, file, renum_atoms=True ):
+    def write_pqr(self, file, renum_atoms=True) -> None:
         '''Write PQR file'''
         # renumber atoms
         if renum_atoms: self.renum_atoms()
@@ -511,7 +511,7 @@ class PDB:
             outp.write("END\n")
 
     ## write gro to file ----------------------------------------------
-    def write_gro( self, file, renum_atoms=True ):
+    def write_gro(self, file, renum_atoms=True) -> None:
         '''Write GROMACS' gro file'''
         if renum_atoms: self.renum_atoms()
         with open( file, 'wt' ) as outp:
@@ -527,7 +527,7 @@ class PDB:
             outp.write("   0.00000   0.00000   0.00000\n")
 
     ## write fasta to file --------------------------------------------
-    def write_fasta( self, file, gaps=False ):
+    def write_fasta(self, file, gaps=False) -> None:
         '''Write fasta file'''
         if not gaps:
             seq = [ i[2] for i in self.sequence ]
@@ -550,7 +550,7 @@ class PDB:
                 outp.write( formatted_line + "\n" )
 
     ## write XYZ to file ----------------------------------------------
-    def write_xyz( self, file ):
+    def write_xyz(self, file) -> None:
         '''Write XYZ file'''
         self.guess_elements()
         with open( file, 'wt' ) as outp:
@@ -561,7 +561,7 @@ class PDB:
                            .format(atom['element'], atom['x'], atom['y'], atom['z']))
 
     ## write interaction sequence to file -----------------------------
-    def write_intseq( self, file ):
+    def write_intseq(self, file) -> None:
         '''Write interaction sequence to file'''
         seq = self.sequence
         # open file
@@ -572,7 +572,7 @@ class PDB:
                 outp.write( formatted_line + "\n" )
 
     ## write dynamo crd to file ---------------------------------------
-    def write_crd( self, file ):
+    def write_crd(self, file) -> None:
         '''Write dynamo crd file'''
         # open file
         with open(file, 'wt') as outp:
@@ -612,7 +612,7 @@ class PDB:
                     n += 1
 
     ## write dynamo seq to file ---------------------------------------
-    def write_seq( self, file, variants=True, ssbonds=True ):
+    def write_seq(self, file, variants=True, ssbonds=True) -> None:
         '''Write dynamo seq file'''
         # open file
         with open(file, 'wt') as outp:
@@ -652,7 +652,7 @@ class PDB:
             outp.write("\nEnd")
 
     ## write dynamo ligand opls to file -------------------------------
-    def write_ligand( self, ligand ):
+    def write_ligand(self, ligand) -> None:
         '''Write dynamo ligand topology file'''
         file=ligand+".ff"
         # get ligand lines index
@@ -710,7 +710,7 @@ class PDB:
                     outp.write("\n")
 
     ## substitute field -----------------------------------------------
-    def substitute( self, field, origin, destination, protectProtein=False, onlyProtein=False ):
+    def substitute(self, field, origin, destination, protectProtein=False, onlyProtein=False) -> None:
         '''Change field values that match'''
         if protectProtein and onlyProtein:
             return
@@ -725,7 +725,7 @@ class PDB:
                 if n[field] == origin: n[field] = destination
 
     ## empty/zero or value field --------------------------------------
-    def clean_field( self, field, value=None ):
+    def clean_field(self, field, value=None) -> None:
         '''Makes field zero/empty or value'''
 
         # check field
@@ -747,7 +747,7 @@ class PDB:
             n[field] = value
 
     ## return atoms that match fields ---------------------------------
-    def findall( self, match_all=True, **fields_and_values ):
+    def findall(self, match_all=True, **fields_and_values) -> list:
         '''Find a list of atom index that match all/any fields'''
         # check input fields
         if fields_and_values.keys() - self.atom_empty.keys():
@@ -758,38 +758,38 @@ class PDB:
                 if matcher(atom[key]==value for key, value in fields_and_values.items())]
 
     ## remove atoms that match fields ---------------------------------
-    def remove( self, match_all=True, **fields_and_values ):
+    def remove(self, match_all=True, **fields_and_values) -> None:
         '''Remove all atoms that match all/any fields'''
         matching_index = self.findall(match_all=match_all, **fields_and_values)
         for n in sorted(matching_index, reverse=True):
             del self.pdb[n]
 
     ## remove ligands -------------------------------------------------
-    def remove_ligands( self ):
+    def remove_ligands(self) -> None:
         '''Remove all ligands'''
         for ligand in self.ligands:
             self.remove(resName=ligand)
 
     ## remove waters --------------------------------------------------
-    def remove_waters( self ):
+    def remove_waters(self) -> None:
         '''Remove all waters (try to)'''
         water_resNames = ('HOH', 'WAT', 'SOL', 'TIP3', 'TIP4', 'TIP5', 'SPC')
         for water in water_resNames:
             self.remove(resName=water)
 
     ## keep only atoms that match fields --------------------------------
-    def keep_only( self, match_all=True, **fields_and_values ):
+    def keep_only(self, match_all=True, **fields_and_values) -> None:
         '''Keep only atoms that match all/any fields'''
         matching_index = self.findall(match_all=match_all, **fields_and_values)
         self.pdb = [atom for n, atom in enumerate(self.pdb) if n in matching_index]
 
     ## all to ATOM ----------------------------------------------------
-    def all2ATOM( self ):
+    def all2ATOM(self) -> None:
         '''Change all ATOM/HETATM to ATOM'''
         self.clean_field('ATOM', 'ATOM')
 
     ## transate resNames between ff -----------------------------------
-    def translate_residues( self, destination, origin=None ):
+    def translate_residues(self, destination, origin=None) -> None:
         '''Translate resNames between ff'''
         if origin is None:
             formats = rosetta_residues.keys()
@@ -803,7 +803,7 @@ class PDB:
                     n['resName'] = rosetta_residues[destination][rosetta_residues[j].index(resName)]
 
     ## transate names between formats ---------------------------------
-    def translate_names( self, destination, origin ):
+    def translate_names(self, destination, origin) -> None:
         '''Translate atom names between formats'''
         for n in self.pdb:
             resName = n['resName']
@@ -812,7 +812,7 @@ class PDB:
                 n['name'] = rosetta_atoms[destination][resName][rosetta_atoms[origin][resName].index(name)]
 
     ## reorder protein atoms ------------------------------------------
-    def canonical_order( self, canon='dynamo' ):
+    def canonical_order(self, canon='dynamo') -> None:
         '''Reorder protein atoms'''
         nres = self.nres
         # find protein
@@ -844,13 +844,13 @@ class PDB:
             res += 1
 
     ## renumber atoms -------------------------------------------------
-    def renum_atoms( self, start=1 ):
+    def renum_atoms(self, start=1) -> None:
         '''Renumber all atoms from 'start' (def: 1)'''
         for id, n in enumerate(self.pdb):
             n['serial'] = id + start
 
     ## renumber residues ----------------------------------------------
-    def renum_res( self, start=1, continuous=False, protectProtein=False, guess_segments=False ):
+    def renum_res(self, start=1, continuous=False, protectProtein=False, guess_segments=False) -> None:
         '''Renumber residues, each group from 'start' (def: 1): Protein / Ligands / Solvent / Ions'''
         if guess_segments: self.guess_segments()
         resSeq = start - 1
@@ -877,7 +877,7 @@ class PDB:
                 n['resSeq'] = resSeq
 
     ## guess elements -------------------------------------------------
-    def guess_elements( self, keepknown=True ):
+    def guess_elements(self, keepknown=True) -> None:
         '''Guess elements for all atoms'''
         for n in self.pdb:
             if keepknown and n['element'] != '': continue
@@ -893,7 +893,7 @@ class PDB:
                 n['element'] = name[0]
 
     ## guess segments -------------------------------------------------
-    def guess_segments( self, keepknown=True, useChains=False ):
+    def guess_segments(self, keepknown=True, useChains=True) -> None:
         '''Guess segments for each group: Protein / Ligands / Solvent / Ions'''
         ligands = self.ligands
         for n in self.pdb:
@@ -913,7 +913,7 @@ class PDB:
                 n['segment'] = segment_letters[ligands.index(resName) + 1]
 
     ## molecular weight -----------------------------------------------
-    def weight( self, guess_elements=True, onlyProtein=True, monoisotopic=False ):
+    def weight(self, guess_elements=True, onlyProtein=True, monoisotopic=False) -> float:
         '''Molecular weight (Da)'''
         if guess_elements: self.guess_elements()
         mass = 0.0
@@ -924,7 +924,7 @@ class PDB:
         return mass
 
     ## center of mass -------------------------------------------------
-    def com(self, geometric=False,  guess_elements=True, monoisotopic=False):
+    def com(self, geometric=False,  guess_elements=True, monoisotopic=False) -> list:
         '''Calculate center of mass'''
         atomic_mass = 'm' if monoisotopic else 'm_std'
         # calculate total mass
@@ -943,7 +943,7 @@ class PDB:
         return com
 
     ## move COM to center ---------------------------------------------
-    def center(self, center=[0., 0., 0.], geometric=False, guess_elements=True, monoisotopic=False):
+    def center(self, center=[0., 0., 0.], geometric=False, guess_elements=True, monoisotopic=False) -> None:
         '''Move system's COM to the center'''
         com = self.com(geometric=geometric, guess_elements=guess_elements, monoisotopic=monoisotopic)
         for n in self.pdb:
@@ -951,7 +951,7 @@ class PDB:
                 n[j] -= com[i] - center[i]
 
     ## change names CYS for CYX ---------------------------------------
-    def cys2cyx( self ):
+    def cys2cyx(self) -> None:
         '''Change resName of CYS for CYX if not HG'''
         # get resSeq for SG and HG atoms
         sg = { line['resSeq'] for n, line in enumerate(self.pdb) if line['name']=='SG' and line['resName'] in aa }
@@ -962,7 +962,7 @@ class PDB:
             elif n['resName'] == 'CYX' and n['resSeq'] in sg.intersection(hg): n['resName'] = 'CYS'
 
     ## change HIS for HID/HIE/HIP -------------------------------------
-    def guess_his( self ):
+    def guess_his(self) -> None:
         '''Change HIS for corresponding HID/HIE/HIP'''
         # get resSeq for N HIS
         nhis = [ n for n, line in enumerate(self.pdb) if line['name']=='N' and line['resName']=='HIS' ]
@@ -989,7 +989,7 @@ class PDB:
                 self.pdb[n]['resName'] = histype
 
     ## change GLU for GLH ---------------------------------------------
-    def guess_glh( self ):
+    def guess_glh(self) -> None:
         '''Change GLU for corresponding GLH'''
         # get resSeq for N HIS
         nglu = [ n for n, line in enumerate(self.pdb) if line['name']=='N' and line['resName']=='GLU' ]
@@ -1009,7 +1009,7 @@ class PDB:
                     self.pdb[n]['resName'] = 'GLH'
 
     ## change ASP for ASH ---------------------------------------------
-    def guess_ash( self ):
+    def guess_ash(self) -> None:
         '''Change ASP for corresponding ASH'''
         # get resSeq for N HIS
         nasp = [ n for n, line in enumerate(self.pdb) if line['name']=='N' and line['resName']=='ASP' ]
@@ -1029,7 +1029,7 @@ class PDB:
                     self.pdb[n]['resName'] = 'ASH'
 
     ## change LYS for LYN ---------------------------------------------
-    def guess_lyn( self ):
+    def guess_lyn(self) -> None:
         '''Change LYS for corresponding LYN'''
         # get resSeq for N HIS
         nasp = [ n for n, line in enumerate(self.pdb) if line['name']=='N' and line['resName']=='LYS' ]
@@ -1049,7 +1049,7 @@ class PDB:
                     self.pdb[n]['resName'] = 'LYN'
 
     ## guess protonation resName of key residues ----------------------
-    def guess_protonres( self ):
+    def guess_protonres(self) -> None:
         '''Change residues based on their protonation (HIS,GLU,ASP,LYS)'''
         self.guess_his()
         self.guess_glh()
@@ -1058,19 +1058,19 @@ class PDB:
 
     ## number of atoms ------------------------------------------------
     @property
-    def natoms( self ):
+    def natoms(self) -> int:
         '''Number of atoms'''
         return len(self.pdb)
 
     ## number of protein residues -------------------------------------
     @property
-    def nres( self ):
+    def nres(self) -> int:
         '''Number of protein residues'''
         return len(self.sequence)
 
     ## number of total residues ---------------------------------------
     @property
-    def nres_tot( self ):
+    def nres_tot(self) -> int:
         '''Number of total residues'''
         nres_tot = 1
         for n in range(1, self.natoms):
@@ -1080,19 +1080,19 @@ class PDB:
 
     ## number of segments ---------------------------------------------
     @property
-    def nseg( self ):
+    def nseg(self) -> int:
         '''Number of segments'''
         return len(self.segments.keys())
 
     ## list of list of coordinates ------------------------------------
     @property
-    def xyz( self ):
+    def xyz(self) -> list:
         '''List of list of coordinates [[x,y,z]]'''
         return [[a['x'], a['y'], a['z']] for a in self.pdb]
 
     ## dictionary of segments -----------------------------------------
     @property
-    def segments( self ):
+    def segments(self) -> dict:
         '''Dictionary of segments: { seg : #res }'''
         seg = {}
         for n in range(self.natoms):
@@ -1105,7 +1105,7 @@ class PDB:
 
     ## residue sequence -----------------------------------------------
     @property
-    def sequence( self ):
+    def sequence(self) -> list:
         '''List of protein residues: [[ #, XXX, X ]]'''
         letter_seq = []
         for n in self.pdb:
@@ -1119,7 +1119,7 @@ class PDB:
 
     ## ligands list ---------------------------------------------------
     @property
-    def ligands( self ):
+    def ligands(self) -> list:
         '''List of ligands: [ XXX ]'''
         ligands = []
         for n in self.pdb:
@@ -1131,7 +1131,7 @@ class PDB:
 
     ## dishuphide bridges list ----------------------------------------
     @property
-    def ssbonds( self ):
+    def ssbonds(self) -> list:
         '''S-S bonds list: [[ #resSeq, #resSeq ]]'''
         ss_bond_thr = 3.0  # maximum distance to consider S-S bond (A)
         # get lines from SG atoms from CYX
@@ -1148,13 +1148,13 @@ class PDB:
 
     ## protein weight -------------------------------------------------
     @property
-    def protein_weight( self ):
+    def protein_weight(self) -> float:
         '''Molecular average protein weight (Da)'''
         return self.weight( guess_elements=True, onlyProtein=True, monoisotopic=False )
 
     ## build a PyMOL's selection macro notation for an atom -----------
     @staticmethod
-    def pymol_sele_macro( atom_dict ):
+    def pymol_sele_macro(atom_dict) -> str:
         '''Build a PyMOL's selection macro notation for an atom'''
         # https://pymolwiki.org/index.php/Selection_Macros
         # /object-name/segi-identifier/chain-identifier/resi-identifier/name-identifier
@@ -1164,7 +1164,7 @@ class PDB:
         return "//{}".format("/".join(fields))
 
     ## standard protein preparation -----------------------------------
-    def standard_preparation( self, inpformat, outformat, ff='amber' ):
+    def standard_preparation(self, inpformat, outformat, ff='amber') -> None:
         '''
             Standard protein preparation
 
