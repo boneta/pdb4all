@@ -602,7 +602,11 @@ class PDB:
                 outp.write("Residue {:>5d}  {:s}\n".format(resSeq, resName))
                 # atom statement (count number of atoms in residue and print all)
                 nres = n
-                while nres < natoms and self.pdb[nres]['resName'] == resName and self.pdb[nres]['resSeq'] == resSeq : nres += 1
+                while nres < natoms and \
+                      self.pdb[nres]['resName'] == resName and \
+                      self.pdb[nres]['resSeq'] == resSeq and \
+                      self.pdb[nres]['segment'] == subsys:
+                    nres += 1
                 outp.write("{:7d}\n".format(nres - n))
                 while n < nres:
                     outp.write("{:>7d} {:<4s} {:>10d} {:>18.10f}{:>18.10f}{:>18.10f}\n"
@@ -631,14 +635,16 @@ class PDB:
                     subsys = self.pdb[n]['segment']
                     outp.write("\nSubsystem  {:s}\n{:>5d}\n".format(subsys,segments[subsys]))
                 # residues
-                if self.pdb[n]['resName'] != self.pdb[n-1]['resName'] or self.pdb[n]['resSeq'] != self.pdb[n-1]['resSeq']:
+                if self.pdb[n]['resName'] != self.pdb[n-1]['resName'] or \
+                   self.pdb[n]['resSeq'] != self.pdb[n-1]['resSeq'] or \
+                   self.pdb[n]['segment'] != self.pdb[n-1]['segment']:
                     nline += 1
                     outp.write("{:s} ; ".format(self.pdb[n]['resName']))
                     if nline % 13 == 0:
                         nline = 0
                         outp.write("\n")
                 if n+1 < natoms and self.pdb[n+1]['segment'] != subsys:
-                    if variants and subsys == 'A':
+                    if variants and self.pdb[n]['resName'] in aa:
                         outp.write("\nVARIANT          N_TERMINAL  {:<s}  {:<d}".format(sequence[0][1],sequence[0][0]))
                         outp.write("\nVARIANT          C_TERMINAL  {:<s}  {:<d}".format(sequence[-1][1],sequence[-1][0]))
                         outp.write("\nEnd\n")
@@ -651,12 +657,10 @@ class PDB:
                     outp.write("\nLink DISULPHIDE_BRIDGE A CYX {:>3d} A CYX {:>3d}".format(*ssbond))
             outp.write("\nEnd")
 
-    ## write dynamo ligand opls to file -------------------------------
-    def write_ligand(self, ligand) -> None:
-        '''Write dynamo ligand topology file'''
-        file=ligand+".ff"
-        # get ligand lines index
-        lig_index = [i for i, n in enumerate(self.pdb) if n['resName']==ligand]
+    ## write dynamo topology of ligand to file ------------------------
+    def write_ff(self, file, lig_name='UNK', lig_index=None) -> None:
+        '''Write dynamo topology file'''
+        lig_index = lig_index if lig_index is not None else list(range(self.natoms))
         # bonds: calculate upper distance matrix, consider bond if below threshold
         bond_thr = 1.7  # bond threshold
         bonds = []
@@ -680,7 +684,7 @@ class PDB:
         with open(file, 'wt') as outp:
             # header
             outp.write("!-------------------------------------------------------------------------------\n")
-            outp.write("Residue {:s}\n".format(ligand))
+            outp.write("Residue {:s}\n".format(lig_name))
             outp.write("!-------------------------------------------------------------------------------\n")
             outp.write("! # Atoms, bonds and impropers.\n")
             outp.write(" {}   {}   {}\n""".format(len(lig_index),len(bonds),len(impropers)))
@@ -708,6 +712,14 @@ class PDB:
                 if nline % 3 == 0:
                     nline = 0
                     outp.write("\n")
+
+    ## write dynamo ff for all ligands --------------------------------
+    def write_ff_ligands(self) -> None:
+        '''Write dynamo topology files for all ligands'''
+        for lig_name, lig_resSeq, lig_segment in self.ligands_long:
+            lig_index = self.findall(resName=lig_name, resSeq=lig_resSeq, segment=lig_segment)
+            lig_file = f"{lig_name}_{lig_resSeq}_{lig_segment}.ff"
+            self.write_ff(lig_file, lig_name, lig_index)
 
     ## substitute field -----------------------------------------------
     def substitute(self, field, origin, destination, protectProtein=False, onlyProtein=False) -> None:
@@ -1084,6 +1096,12 @@ class PDB:
         '''Number of segments'''
         return len(self.segments.keys())
 
+    ## number of ligands ----------------------------------------------
+    @property
+    def nlig(self) -> int:
+        '''Number of ligands'''
+        return len(self.ligands)
+
     ## list of list of coordinates ------------------------------------
     @property
     def xyz(self) -> list:
@@ -1121,13 +1139,20 @@ class PDB:
     @property
     def ligands(self) -> list:
         '''List of ligands: [ XXX ]'''
-        ligands = []
-        for n in self.pdb:
-            resName = n['resName']
-            if resName not in aa and resName not in solvent \
-               and resName not in ions and resName not in ligands:
-                ligands.append(n['resName'])
-        return ligands
+        return [i[0] for i in self.ligands_long]
+
+    ## ligands long information list ----------------------------------
+    @property
+    def ligands_long(self) -> list:
+        '''Dict of extended ligand information: [[ XXX, resSeq, segment]]'''
+        ligands_long = []
+        for atom in self.pdb:
+            if atom['resName'] in aa | solvent.keys() | ions.keys():
+                continue
+            ligand = (atom['resName'], atom['resSeq'], atom['segment'])
+            if ligand not in ligands_long:
+                ligands_long.append(ligand)
+        return ligands_long
 
     ## dishuphide bridges list ----------------------------------------
     @property

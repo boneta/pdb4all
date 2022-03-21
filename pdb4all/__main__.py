@@ -154,7 +154,7 @@ def main():
             if args.dynamize:
                 my_pdb.write_crd(baseout + '.crd')
                 my_pdb.write_seq(baseout + '.seq', variants=True, ssbonds=True)
-                for ligand in my_pdb.ligands: my_pdb.write_ligand(ligand)
+                my_pdb.write_ff_ligands()
             for n in ['occupancy', 'tempFactor', 'element', 'charge', 'chainID']: my_pdb.clean_field(n)
             my_pdb.write(outfile, title=True, remark4=True, renum_atoms=True, onlyProtein=False)
 
