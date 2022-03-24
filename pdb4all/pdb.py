@@ -1097,7 +1097,10 @@ class PDB:
         '''Number of total residues'''
         nres_tot = 1
         for n in range(1, self.natoms):
-            if self.pdb[n]['resName'] != self.pdb[n-1]['resName'] or self.pdb[n]['resSeq'] != self.pdb[n-1]['resSeq']:
+            if self.pdb[n]['resName'] != self.pdb[n-1]['resName'] or \
+               self.pdb[n]['resSeq'] != self.pdb[n-1]['resSeq'] or \
+               self.pdb[n]['chainID'] != self.pdb[n-1]['chainID'] or \
+               self.pdb[n]['segment'] != self.pdb[n-1]['segment']:
                 nres_tot += 1
         return nres_tot
 
