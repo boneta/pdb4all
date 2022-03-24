@@ -332,6 +332,10 @@ class PDB:
     def read_pqr(self, file) -> None:
         '''Read APBS' pqr files'''
         self.read_pdb(file, strict=False)
+        for atom in self.pdb:
+            atom['charge'] = atom['occupancy']
+        for field in ['tempFactor', 'segment']:
+            self.clean_field(field)
 
     ## read gro from file ---------------------------------------------
     def read_gro(self, file) -> None:
@@ -466,27 +470,29 @@ class PDB:
     ## write pdb to file ----------------------------------------------
     def write_pdb(self, file, title=False, remark4=False, renum_atoms=True, onlyProtein=False, notProtein=False) -> None:
         '''Write PDB file'''
-        # renumber atoms
         if renum_atoms: self.renum_atoms()
-        # open file
-        with open( file, 'wt' ) as outp:
+        with open(file, 'wt') as outp:
             if remark4: outp.write("REMARK   4      COMPLIES WITH FORMAT V. 3.3, 21-NOV-2012\n")
             if title: outp.write("TITLE     {:70s}\n".format(self.title))
-            for n in range(self.natoms):
-                line = self.pdb[n].copy()
+            for line in deepcopy(self.pdb):
                 # discart if not aminoacid and onlyProtein
                 if onlyProtein and line['resName'] not in aa: continue
                 # discart if aminoacid and notProtein
                 if notProtein and line['resName'] in aa: continue
                 # correct alignment of atom name
                 if len(line['name']) == 3: line['name'] = ' ' + line['name']
+                # correct very high numbers
+                if line['resSeq'] > 9999:
+                    line['resSeq'] -= 10000 * (line['resSeq'] // 10000)
+                if line['serial'] > 99999:
+                    line['serial'] -= 100000 * (line['serial'] // 100000)
                 # format pdb
-                # formatted_line = "{:<6s}{:>5d} {:^4s}{:1s}{:>3s} {:1s}{:>4d}{:1s}   {:>8.3f}{:>8.3f}{:>8.3f}{:>6.2f}{:>6.2f}      {:<4s}{:>2s}{:<2s}" \
-                # .format( line['ATOM'], line['serial'], line['name'], line['altLoc'], line['resName'], line['chainID'], line['resSeq'], line['iCode'], \
-                # line['x'], line['y'], line['z'], line['occupancy'], line['tempFactor'], line['segment'], line['element'], line['charge'] )
-                formatted_line = "{:<6s}{:>5d} {:^4s}{:1s}{:>3s} {:1s}{:>4.4}{:1s}   {:>8.3f}{:>8.3f}{:>8.3f}{:>6.2f}{:>6.2f}      {:<4s}{:>2s}{:<2s}" \
-                .format( line['ATOM'], line['serial'], line['name'], line['altLoc'], line['resName'], line['chainID'], str(line['resSeq']), line['iCode'], \
-                line['x'], line['y'], line['z'], line['occupancy'], line['tempFactor'], line['segment'], line['element'], line['charge'] )
+                formatted_line = "{:<6s}{:>5d} {:^4s}{:1s}{:>3s} {:1s}{:>4d}{:1s}   {:>8.3f}{:>8.3f}{:>8.3f}{:>6.2f}{:>6.2f}      {:<4s}{:>2s}{:<2s}" \
+                                 .format(line['ATOM'], line['serial'], \
+                                         line['name'], line['altLoc'], line['resName'], \
+                                         line['chainID'], line['resSeq'], line['iCode'], \
+                                         line['x'], line['y'], line['z'], line['occupancy'], line['tempFactor'], \
+                                         line['segment'], line['element'], line['charge'])
                 # write
                 outp.write( formatted_line + "\n" )
             outp.write("END\n")  # final 'END'
@@ -494,18 +500,20 @@ class PDB:
     ## write pqr to file ----------------------------------------------
     def write_pqr(self, file, renum_atoms=True) -> None:
         '''Write PQR file'''
-        # renumber atoms
+        # https://apbs.readthedocs.io/en/latest/formats/pqr.html
+        # Field_name Atom_number Atom_name Residue_name Chain_ID Residue_number X Y Z Charge Radius
         if renum_atoms: self.renum_atoms()
-        # open file
-        with open( file, 'wt' ) as outp:
-            for n in range(self.natoms):
-                line = deepcopy(self.pdb[n])
+        with open(file, 'wt') as outp:
+            for line in deepcopy(self.pdb):
                 # correct alignment of atom name
                 if len(line['name']) == 3: line['name'] = ' ' + line['name']
-                # format pqr
+                # format pqr (white-space separated)
                 formatted_line = "{:<6s} {:>4d} {:^4s} {:>3s} {:1s} {:>3d}     {:>7.3f} {:>7.3f} {:>7.3f} {:>5.2f} {:>5.2f}" \
-                    .format( line['ATOM'], line['serial'], line['name'], line['resName'], line['chainID'], line['resSeq'], \
-                    line['x'], line['y'], line['z'], 0.0, 0.0 )
+                                 .format(line['ATOM'], line['serial'], \
+                                         line['name'], line['resName'], \
+                                         line['chainID'], line['resSeq'], \
+                                         line['x'], line['y'], line['z'], \
+                                         line['charge'], 0.0 )
                 # write
                 outp.write( formatted_line + "\n" )
             outp.write("END\n")
