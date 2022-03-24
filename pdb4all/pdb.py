@@ -219,6 +219,9 @@ class PDB:
     def __len__(self) -> int:
         return self.natoms
 
+    def deepcopy(self) -> 'PDB':
+        return deepcopy(self)
+
     ## read -----------------------------------------------------------
     def read(self, file, format=None, **kargs) -> None:
         '''
