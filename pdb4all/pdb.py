@@ -146,6 +146,8 @@ class PDB:
             translate atom names between standards
         canonical_order(canon)
             reorder protein atoms inside residues
+        order_by_atom(keepnames, protectProtein)
+            reorder atoms by element(reversed Periodic Table) in each residue and change their names in order
         renum_atoms(start)
             renumber all atoms from 'start' (def: 1)
         renum_res(start,continuous,protectProtein,guess_segments)
@@ -847,10 +849,10 @@ class PDB:
             resSeq = self.pdb[linen]['resSeq']
             resName = self.pdb[linen]['resName']
             # find last residue line
-            linen_end = linen
-            while True and linen_end < self.natoms:
-                if self.pdb[linen_end]['resSeq'] == resSeq and self.pdb[linen_end]['resName'] == resName: linen_end += 1
-                else: break
+            for linen_end in range(linen, self.natoms):
+                if not (self.pdb[linen_end]['resSeq'] == resSeq and self.pdb[linen_end]['resName'] == resName):
+                    linen_end -= 1
+                    break
             # reorder atoms (modified bubble sort algorithm)
             for j in range(linen, linen_end-1):
                 swapped = False
@@ -865,6 +867,46 @@ class PDB:
                 if not swapped: break
             linen = linen_end +1
             res += 1
+        self.renum_atoms()
+
+    ## reorder atoms by element ---------------------------------------
+    def order_by_atom(self, keepnames=False, protectProtein=True) -> None:
+        '''Reorder atoms by element (reversed Periodic Table) in each residue and change their names in order'''
+        if not all([n['element'] for n in self.pdb]):
+            self.guess_elements()
+        Ptable_elements_reverse = list(Ptable.keys())[::-1]
+        nres_tot = self.nres_tot
+        linen = 0
+        res = 1
+        while res <= nres_tot:
+            # residue number and name
+            resSeq = self.pdb[linen]['resSeq']
+            resName = self.pdb[linen]['resName']
+            # find last residue line
+            for linen_end in range(linen, self.natoms):
+                if not (self.pdb[linen_end]['resSeq'] == resSeq and self.pdb[linen_end]['resName'] == resName):
+                    linen_end -= 1
+                    break
+            # skip protein
+            if protectProtein and resName in aa:
+                linen = linen_end + 1
+                res += 1
+                continue
+            # reorder atoms (modified bubble sort algorithm)
+            for j in range(linen, linen_end-1):
+                for i in range(linen, linen_end-j+linen-1):
+                    if Ptable_elements_reverse.index(self.pdb[i]['element']) > Ptable_elements_reverse.index(self.pdb[i+1]['element']):
+                        self.pdb[i], self.pdb[i+1] = self.pdb[i+1], self.pdb[i]
+            # rename atoms
+            if not keepnames:
+                elements = []
+                for i in range(linen, linen_end+1):
+                    element = f"{self.pdb[i]['element']}"
+                    elements.append(element)
+                    self.pdb[i]['name'] = f"{element}{elements.count(element)}"
+            linen = linen_end +1
+            res += 1
+        self.renum_atoms()
 
     ## renumber atoms -------------------------------------------------
     def renum_atoms(self, start=1) -> None:

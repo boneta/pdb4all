@@ -37,6 +37,6 @@
 
 """
 
-__version__ = '0.4.18'
+__version__ = '0.4.19'
 
 from pdb4all.pdb import *
