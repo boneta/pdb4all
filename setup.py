@@ -10,9 +10,16 @@ current_path = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(current_path, "README.md")) as f:
     readme_text = f.read()
 
+# get version
+with open(os.path.join(current_path, "pdb4all", "__init__.py")) as f:
+    for line in f:
+        if line.startswith("__version__"):
+            version = line.split("=")[1].strip().strip("'")
+            break
+
 setup(
     name="pdb4all",
-    version='0.4.18',
+    version=version,
     description="Convert between common protein pdb formats and names ",
     long_description=readme_text,
     long_description_content_type="text/markdown",
