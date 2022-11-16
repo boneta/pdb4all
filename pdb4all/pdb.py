@@ -849,10 +849,11 @@ class PDB:
             resSeq = self.pdb[linen]['resSeq']
             resName = self.pdb[linen]['resName']
             # find last residue line
-            for linen_end in range(linen, self.natoms):
-                if not (self.pdb[linen_end]['resSeq'] == resSeq and self.pdb[linen_end]['resName'] == resName):
-                    linen_end -= 1
+            linen_end = linen
+            while linen_end+1 < self.natoms:
+                if self.pdb[linen_end+1]['resSeq'] != resSeq or self.pdb[linen_end+1]['resName'] != resName:
                     break
+                linen_end += 1
             # reorder atoms (modified bubble sort algorithm)
             for j in range(linen, linen_end-1):
                 swapped = False
@@ -883,27 +884,28 @@ class PDB:
             resSeq = self.pdb[linen]['resSeq']
             resName = self.pdb[linen]['resName']
             # find last residue line
-            for linen_end in range(linen, self.natoms):
-                if not (self.pdb[linen_end]['resSeq'] == resSeq and self.pdb[linen_end]['resName'] == resName):
-                    linen_end -= 1
+            linen_end = linen
+            while linen_end+1 < self.natoms:
+                if self.pdb[linen_end+1]['resSeq'] != resSeq or self.pdb[linen_end+1]['resName'] != resName:
                     break
+                linen_end += 1
             # skip protein
-            if protectProtein and resName in aa:
-                linen = linen_end + 1
-                res += 1
-                continue
-            # reorder atoms (modified bubble sort algorithm)
-            for j in range(linen, linen_end-1):
-                for i in range(linen, linen_end-j+linen-1):
-                    if Ptable_elements_reverse.index(self.pdb[i]['element']) > Ptable_elements_reverse.index(self.pdb[i+1]['element']):
-                        self.pdb[i], self.pdb[i+1] = self.pdb[i+1], self.pdb[i]
-            # rename atoms
-            if not keepnames:
-                elements = []
-                for i in range(linen, linen_end+1):
-                    element = f"{self.pdb[i]['element']}"
-                    elements.append(element)
-                    self.pdb[i]['name'] = f"{element}{elements.count(element)}"
+            if not (protectProtein and resName in aa):
+                # reorder atoms (modified bubble sort algorithm)
+                for j in range(linen, linen_end-1):
+                    swapped = False
+                    for i in range(linen, linen_end-j+linen-1):
+                        if Ptable_elements_reverse.index(self.pdb[i]['element']) > Ptable_elements_reverse.index(self.pdb[i+1]['element']):
+                            self.pdb[i], self.pdb[i+1] = self.pdb[i+1], self.pdb[i]
+                            swapped = True
+                    if not swapped: break
+                # rename atoms
+                if not keepnames:
+                    elements = []
+                    for i in range(linen, linen_end+1):
+                        element = f"{self.pdb[i]['element']}"
+                        elements.append(element)
+                        self.pdb[i]['name'] = f"{element}{elements.count(element)}"
             linen = linen_end +1
             res += 1
         self.renum_atoms()
