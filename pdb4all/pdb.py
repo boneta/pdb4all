@@ -828,11 +828,12 @@ class PDB:
                     n['resName'] = rosetta_residues[destination][rosetta_residues[j].index(resName)]
 
     ## transate names between formats ---------------------------------
-    def translate_names(self, destination, origin) -> None:
+    def translate_names(self, destination, origin, onlyProtein=True) -> None:
         '''Translate atom names between formats'''
         for n in self.pdb:
             resName = n['resName']
             name = n['name']
+            if onlyProtein and not resName in aa: continue
             if resName in rosetta_atoms[origin] and name in rosetta_atoms[origin][resName]:
                 n['name'] = rosetta_atoms[destination][resName][rosetta_atoms[origin][resName].index(name)]
 
