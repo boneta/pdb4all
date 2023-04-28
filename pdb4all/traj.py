@@ -10,8 +10,9 @@
 """
 
 import math as m
+import sys
 from copy import deepcopy
-from struct import pack, unpack
+from struct import error, pack, unpack
 
 from pdb4all import PDB
 
@@ -52,7 +53,7 @@ class Traj:
     '''
 
     def __init__(self, top=None) -> None:
-        self.top = top or PDB()
+        self.top = top if type(top) == PDB else PDB()
         self.frames_xyz = []
         self.nfixed = 0
         self.nfree = 0
@@ -99,16 +100,16 @@ class Traj:
         with open(file, 'rb') as f:
             # header
             self._end = "<" if unpack("i", f.read(4))[0] == 84 else ">"
-            end = f"{self._end}i"
+            endi = f"{self._end}i"
             f.read(4)
-            self._nframes_dcd = unpack(end, f.read(4))[0]
+            self._nframes_dcd = unpack(endi, f.read(4))[0]
             f.read(28)
-            self.nfixed = unpack(end, f.read(4))[0]
+            self.nfixed = unpack(endi, f.read(4))[0]
             f.read(4)
-            self.qcrys = unpack(end, f.read(4))[0]
+            self.qcrys = unpack(endi, f.read(4))[0]
             f.read(40)
-            f.read(unpack(end, f.read(4))[0] + 8)
-            self._natoms_dcd = unpack(end, f.read(4))[0]
+            f.read(unpack(endi, f.read(4))[0] + 8)
+            self._natoms_dcd = unpack(endi, f.read(4))[0]
             if self._natoms_dcd != self.top.natoms:
                 raise Exception("Number of atoms in topology and trajectory do not match")
             self.nfree = self._natoms_dcd - self.nfixed
@@ -120,30 +121,35 @@ class Traj:
                 f.read(4)
             # frames
             frames_xyz = self.top.xyz.copy()
-            for nframe in range(self._nframes_dcd):
-                f.read(4)
-                if self.qcrys:
-                    f.read(56)
-                if self.nfixed > 0 and nframe > 0:
-                    natoms = self.nfree
-                    natom_list = [self.sele[natom] for natom in range(self.nfree)]
-                else:
-                    natoms = self._natoms_dcd
-                    natom_list = range(self._natoms_dcd)
-                x_coord = unpack(f"{self._end}{natoms:d}f", f.read(4 * natoms))
-                f.read(8)
-                y_coord = unpack(f"{self._end}{natoms:d}f", f.read(4 * natoms))
-                f.read(8)
-                z_coord = unpack(f"{self._end}{natoms:d}f", f.read(4 * natoms))
-                f.read(4)
-                if nframe % stride == 0:
-                    for natom in range(natoms):
-                        frames_xyz[natom_list[natom]] = x_coord[natom], y_coord[natom], z_coord[natom]
-                    self.frames_xyz.append(frames_xyz.copy())
+            try:
+                for nframe in range(self._nframes_dcd):
+                    f.read(4)
+                    if self.qcrys:
+                        f.read(56)
+                    if self.nfixed > 0 and nframe > 0:
+                        natoms = self.nfree
+                        natom_list = [self.sele[natom] for natom in range(self.nfree)]
+                    else:
+                        natoms = self._natoms_dcd
+                        natom_list = range(self._natoms_dcd)
+                    x_coord = unpack(f"{self._end}{natoms:d}f", f.read(4 * natoms))
+                    f.read(8)
+                    y_coord = unpack(f"{self._end}{natoms:d}f", f.read(4 * natoms))
+                    f.read(8)
+                    z_coord = unpack(f"{self._end}{natoms:d}f", f.read(4 * natoms))
+                    f.read(4)
+                    if nframe % stride == 0:
+                        for natom in range(natoms):
+                            frames_xyz[natom_list[natom]] = x_coord[natom], y_coord[natom], z_coord[natom]
+                        self.frames_xyz.append(frames_xyz.copy())
+            except error:
+                sys.stderr.write(f"WARNING: {self.nframes} frames read instead of {self._nframes_dcd} claimed by header\n ")
 
     ## get nframe -----------------------------------------------------
     def nframe(self, nframe) -> 'PDB':
         '''Return PDB object of nframe'''
+        if nframe >= self.nframes:
+            raise ValueError(f"Frame requested ({nframe}) greater than number of frames ({self.nframes})")
         top = deepcopy(self.top)
         for natom in range(self.natoms):
             top.pdb[natom]['x'], top.pdb[natom]['y'], top.pdb[natom]['z'] = self.frames_xyz[nframe][natom]
