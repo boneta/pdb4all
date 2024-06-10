@@ -855,18 +855,10 @@ class PDB:
                 if self.pdb[linen_end+1]['resSeq'] != resSeq or self.pdb[linen_end+1]['resName'] != resName:
                     break
                 linen_end += 1
-            # reorder atoms (modified bubble sort algorithm)
-            for j in range(linen, linen_end-1):
-                swapped = False
-                for i in range(linen, linen_end-j+linen-1):
-                    try:
-                        if rosetta_atoms[canon][resName].index(self.pdb[i]['name']) > rosetta_atoms[canon][resName].index(self.pdb[i+1]['name']):
-                            self.pdb[i], self.pdb[i+1] = self.pdb[i+1], self.pdb[i]
-                            swapped = True
-                    except ValueError:
-                        self.pdb[i], self.pdb[i+1] = self.pdb[i+1], self.pdb[i]
-                        swapped = True
-                if not swapped: break
+            # reorder atoms
+            rosetta_atoms_indexes = [rosetta_atoms[canon][resName].index(a['name']) if a['name'] in rosetta_atoms[canon][resName] else -1 for a in self.pdb[linen:linen_end+1]]
+            self.pdb[linen:linen_end+1] = [self.pdb[linen+i] for i in sorted(range(len(rosetta_atoms_indexes)), key=rosetta_atoms_indexes.__getitem__)]
+            # next residue iteration
             linen = linen_end +1
             res += 1
         self.renum_atoms()
