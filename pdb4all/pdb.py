@@ -884,14 +884,9 @@ class PDB:
                 linen_end += 1
             # skip protein
             if not (protectProtein and resName in aa):
-                # reorder atoms (modified bubble sort algorithm)
-                for j in range(linen, linen_end-1):
-                    swapped = False
-                    for i in range(linen, linen_end-j+linen-1):
-                        if Ptable_elements_reverse.index(self.pdb[i]['element']) > Ptable_elements_reverse.index(self.pdb[i+1]['element']):
-                            self.pdb[i], self.pdb[i+1] = self.pdb[i+1], self.pdb[i]
-                            swapped = True
-                    if not swapped: break
+                # reorder atoms
+                rosetta_atoms_indexes = [Ptable_elements_reverse.index(a['element']) if a['element'] in Ptable_elements_reverse else -1 for a in self.pdb[linen:linen_end+1]]
+                self.pdb[linen:linen_end+1] = [self.pdb[linen+i] for i in sorted(range(len(rosetta_atoms_indexes)), key=rosetta_atoms_indexes.__getitem__)]
                 # rename atoms
                 if not keepnames:
                     elements = []
