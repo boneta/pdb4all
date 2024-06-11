@@ -37,7 +37,7 @@
 
 """
 
-__version__ = '0.5.2'
+__version__ = '0.5.3'
 
 from pdb4all.pdb import *
 from pdb4all.traj import *
