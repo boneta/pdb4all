@@ -140,6 +140,8 @@ class PDB:
             keep only atoms that match all/any fields
         all2ATOM()
             change all ATOM/HETATM to ATOM
+        unify_altLoc(altLoc)
+            unify atoms with alternate locations by keeping only one
         translate_residues(destination,origin)
             translate resName between standards
         translate_names(destination,origin)
@@ -812,6 +814,15 @@ class PDB:
     def all2ATOM(self) -> None:
         '''Change all ATOM/HETATM to ATOM'''
         self.clean_field('ATOM', 'ATOM')
+
+    ## unify alternate locations --------------------------------------
+    def unify_altLoc(self, altLoc='A') -> None:
+        '''Unify atoms with alternate locations by keeping only one'''
+        unmatching_index = [n for n, atom in enumerate(self.pdb) if atom['altLoc'] and atom['altLoc'] != altLoc]
+        for n in sorted(unmatching_index, reverse=True):
+            del self.pdb[n]
+        self.clean_field('altLoc')
+        self.clean_field('occupancy', 1.0)
 
     ## transate resNames between ff -----------------------------------
     def translate_residues(self, destination, origin=None) -> None:
