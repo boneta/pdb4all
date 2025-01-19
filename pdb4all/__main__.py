@@ -18,7 +18,7 @@ from pdb4all.pdb import PDB
 
 def __parserbuilder():
     # supported formats
-    input_formats = ['maestro', 'gmx', 'dynamo']
+    input_formats = ['generic', 'gmx', 'dynamo']
     output_formats = ['fasta', 'gmx', 'dynamo', 'intseq']
     ff_formats = ['amber', 'charmm', 'opls']
 
@@ -46,8 +46,8 @@ def __parserbuilder():
                         metavar='<format>',
                         type=str,
                         choices=input_formats,
-                        default='maestro',
-                        help='input pdb format (def: maestro)')
+                        default='generic',
+                        help='input pdb format (def: generic)')
     parser.add_argument('-o',
                         required=False,
                         metavar='<format>',

@@ -8,23 +8,23 @@
 ### Installation
 Requires `python 3.7+`. No additional dependencies are needed.
 
-*pdb4all* is frequently uploaded to [PyPI](https://pypi.org/project/pdb4all/). To install it, execute the following command:
+*pdb4all* is frequently uploaded to [PyPI](https://pypi.org/project/pdb4all/). To install it, just execute the following command:
 ```
   pip install pdb4all
 ```
 
 ### Usage
 ```
-  pdb4all <options> .pdb
+  pdb4all [options] .pdb
 ```
 
-#### Currently supported ForceFields name conventions
+#### Supported ForceFields name conventions
   * Amber
   * Charmm
   * OPLS
 
-#### Currently supported formats (software)
-  * Fasta
-  * Maestro
+#### Supported formats (and software standards)
+  * FASTA (output only)
+  * generic (Maestro's Protein Preparation Wizard / pdb2pqr / ...)
   * GROMACS
   * fDynamo

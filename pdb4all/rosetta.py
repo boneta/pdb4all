@@ -78,7 +78,7 @@ rosetta_atoms = {
         'HSP': ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'CG', 'ND1', 'HD1', 'CE1', 'HE1', 'NE2', 'HE2', 'CD2', 'HD2', 'C', 'O', 'OC1', 'OC2', 'OXT'],
         'CYX': ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'SG', 'C', 'O', 'OC1', 'OC2', 'OXT']
         },
-    'maestro': {
+    'generic': {
         'ALA': ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB1', 'HB2', 'HB3', 'C', 'O', 'OC1', 'OC2', 'OXT'],
         'ARG': ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB2', 'HB3', 'CG', 'HG2', 'HG3', 'CD', 'HD2', 'HD3', 'NE', 'HE', 'CZ', 'NH1', 'HH11', 'HH12', 'NH2', 'HH21', 'HH22', 'C', 'O', 'OC1', 'OC2', 'OXT'],
         'ASN': ['N', 'H', 'H1', 'H2', 'H3', 'CA', 'HA', 'CB', 'HB2', 'HB3', 'CG', 'OD1', 'ND2', 'HD21', 'HD22', 'C', 'O', 'OC1', 'OC2', 'OXT'],
