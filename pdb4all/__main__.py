@@ -36,7 +36,7 @@ def __parserbuilder():
     parser.add_argument('-v',
                         '--version',
                         action='version',
-                        version='pdb4all  v{}\nby Sergio Boneta / GPL'.format(__version__))
+                        version='pdb4all  v{}\nby Sergio Boneta (GPLv3)'.format(__version__))
     parser.add_argument('I',
                         metavar='.pdb',
                         type=str,
