@@ -52,7 +52,7 @@ class Traj:
             calculate RMSD respect the first frame of trajectory
     '''
 
-    def __init__(self, top=None) -> None:
+    def __init__(self, top:'PDB'=None) -> None:
         self.top = top if type(top) == PDB else PDB()
         self.frames_xyz = []
         self.nfixed = 0
@@ -83,8 +83,7 @@ class Traj:
     def deepcopy(self) -> 'Traj':
         return deepcopy(self)
 
-    ## read dcd -------------------------------------------------------
-    def read_dcd(self, file, top=None, stride=1, top_format=None) -> None:
+    def read_dcd(self, file:str, top:'PDB'=None, stride:int=1, top_format:str=None) -> None:
         '''Load trajectory from DCD file'''
         # topology
         if not (top or self.top):
@@ -145,8 +144,7 @@ class Traj:
             except error:
                 sys.stderr.write(f"WARNING: {self.nframes} frames read instead of {self._nframes_dcd} claimed by header\n ")
 
-    ## get nframe -----------------------------------------------------
-    def nframe(self, nframe) -> 'PDB':
+    def nframe(self, nframe:int) -> 'PDB':
         '''Return PDB object of nframe'''
         if nframe >= self.nframes:
             raise ValueError(f"Frame requested ({nframe}) greater than number of frames ({self.nframes})")
@@ -155,15 +153,13 @@ class Traj:
             top.pdb[natom]['x'], top.pdb[natom]['y'], top.pdb[natom]['z'] = self.frames_xyz[nframe][natom]
         return top
 
-    ## slice ----------------------------------------------------------
-    def slice(self, start, stop, step=1) -> 'Traj':
+    def slice(self, start:int, stop:int, step:int=1) -> 'Traj':
         '''Slice the trajectory'''
         traj_slice = deepcopy(self)
         traj_slice.frames_xyz = traj_slice.frames_xyz[start:stop:step]
         return traj_slice
 
-    ## join -----------------------------------------------------------
-    def join(self, traj) -> 'Traj':
+    def join(self, traj:int) -> 'Traj':
         '''Join trajectory'''
         if self.top != traj.top:
             raise Exception("Topologies do not match")
@@ -171,8 +167,7 @@ class Traj:
         traj_join.frames_xyz.extend(traj.frames_xyz)
         return traj_join
 
-    ## calculate RMSD -------------------------------------------------
-    def rmsd(self, ndx=None) -> float:
+    def rmsd(self, ndx:list=None) -> float:
         '''Calculate RMSD respect the first frame of trajectory'''
         atoms_ndx = ndx or range(self.natoms)
         return m.sqrt(sum(
@@ -182,12 +177,10 @@ class Traj:
             for frame_xyz in self.frames_xyz])
             / (self.nframes * len(atoms_ndx)))
 
-    ## number of atoms ------------------------------------------------
     @property
     def natoms(self) -> int:
         return self.top.natoms
 
-    ## number of frames -----------------------------------------------
     @property
     def nframes(self) -> int:
         return len(self.frames_xyz)
